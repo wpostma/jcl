@@ -33,12 +33,8 @@
 
 unit MSTask;
 
-{$ALIGN ON}
-{$MINENUMSIZE 4}
-
-interface
-
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 {$IFDEF SUPPORTS_WEAKPACKAGEUNIT}
   {$IFDEF UNITVERSIONING}
@@ -48,13 +44,22 @@ interface
   {$ENDIF ~UNITVERSIONING}
 {$ENDIF SUPPORTS_WEAKPACKAGEUNIT}
 
+{$ALIGN ON}
+{$MINENUMSIZE 4}
+
+interface
+
 uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
-  ActiveX,
-  Windows;
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.ActiveX, Winapi.Windows;
+  {$ELSE ~HAS_UNITSCOPE}
+  ActiveX, Windows;
+  {$ENDIF ~HAS_UNITSCOPE}
 
+//DOM-IGNORE-BEGIN
 
 (*$HPPEMIT '#include <MSTask.h>' *)
 
@@ -665,6 +670,8 @@ const
 const
 {$EXTERNALSYM CLSID_CSchedulingAgent}
   CLSID_CSchedulingAgent: TCLSID = (D1: $148BD52A; D2: $A2AB; D3: $11CE; D4: ($B1, $1F, $00, $AA, $00, $53, $05, $03));
+
+//DOM-IGNORE-END
 
 {$IFDEF UNITVERSIONING}
 const

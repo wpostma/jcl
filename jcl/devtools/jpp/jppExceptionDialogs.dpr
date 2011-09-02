@@ -34,11 +34,8 @@ uses
   SysUtils,
   Classes,
   JclIDEUtils,
-  JclTemplates in 'Templates\JclTemplates.pas',
-  JclExcDlgTemplates in 'Templates\JclExcDlgTemplates.pas',
-  JppState in 'JppState.pas',
-  JppLexer in 'JppLexer.pas',
-  JppParser in 'JppParser.pas';
+  JclPreProcessorExcDlgTemplates,
+  JclPreProcessorTemplates;
 
 const
   TemplateDirectory = '..\experts\repository\ExceptionDialog\Templates\';
@@ -49,7 +46,7 @@ var
   AFileStream: TFileStream;
   Buffer: AnsiString;
 begin
-  AFileStream := TFileStream.Create(FileName, fmOpenRead, fmShareDenyWrite);
+  AFileStream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
     SetLength(Buffer, AFileStream.Size);
     AFileStream.ReadBuffer(Buffer[1], AFileStream.Size);
@@ -64,7 +61,7 @@ var
   AFileStream: TFileStream;
   Buffer: AnsiString;
 begin
-  AFileStream := TFileStream.Create(FileName, fmOpenWrite, fmShareExclusive);
+  AFileStream := TFileStream.Create(FileName, fmOpenWrite or fmShareDenyWrite);
   try
     Buffer := AnsiString(FileContent);
     AFileStream.Size := 0;

@@ -42,11 +42,14 @@ unit JclHashSets;
 interface
 
 uses
-  SysUtils,
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
-  Classes,
+  {$IFDEF HAS_UNITSCOPE}
+  System.SysUtils, System.Classes,
+  {$ELSE ~HAS_UNITSCOPE}
+  SysUtils, Classes,
+  {$ENDIF ~HAS_UNITSCOPE}
   {$IFDEF SUPPORTS_GENERICS}
   JclAlgorithms,
   {$ENDIF SUPPORTS_GENERICS}
@@ -54,6 +57,7 @@ uses
 
 type
   {$IFDEF SUPPORTS_GENERICS}
+  //DOM-IGNORE-BEGIN
   TRefUnique = class;
   TRefUnique = class(TInterfacedObject, IEquatable<TRefUnique>, IJclEqualityComparer<TRefUnique>)
   public
@@ -65,13 +69,15 @@ type
     function ItemsEqual(const A, B: TRefUnique): Boolean;
     property EqualityCompare: TEqualityCompare<TRefUnique> read GetEqualityCompare write SetEqualityCompare;
   end;
+  //DOM-IGNORE-END
   {$ELSE ~SUPPORTS_GENERICS}
   TRefUnique = TInterfacedObject;
   {$ENDIF ~SUPPORTS_GENERICS}
 
   TJclIntfHashSet = class(TJclIntfAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclIntfEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclIntfEqualityComparer,
     IJclIntfCollection, IJclIntfSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -91,7 +97,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -130,8 +136,9 @@ type
   end;
 
   TJclAnsiStrHashSet = class(TJclAnsiStrAbstractCollection, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclStrContainer, IJclAnsiStrContainer, IJclAnsiStrEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclAnsiStrContainer, IJclAnsiStrEqualityComparer,
     IJclAnsiStrCollection, IJclAnsiStrSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -157,7 +164,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -196,8 +203,9 @@ type
   end;
 
   TJclWideStrHashSet = class(TJclWideStrAbstractCollection, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclStrContainer, IJclWideStrContainer, IJclWideStrEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclWideStrContainer, IJclWideStrEqualityComparer,
     IJclWideStrCollection, IJclWideStrSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -223,7 +231,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -263,8 +271,9 @@ type
 
 {$IFDEF SUPPORTS_UNICODE_STRING}
   TJclUnicodeStrHashSet = class(TJclUnicodeStrAbstractCollection, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclStrContainer, IJclUnicodeStrContainer, IJclUnicodeStrEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclUnicodeStrContainer, IJclUnicodeStrEqualityComparer,
     IJclUnicodeStrCollection, IJclUnicodeStrSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -287,7 +296,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -337,8 +346,9 @@ type
   {$ENDIF CONTAINER_UNICODESTR}
 
   TJclSingleHashSet = class(TJclSingleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclSingleContainer, IJclSingleEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclSingleContainer, IJclSingleEqualityComparer,
     IJclSingleCollection, IJclSingleSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -361,7 +371,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -400,8 +410,9 @@ type
   end;
 
   TJclDoubleHashSet = class(TJclDoubleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclDoubleContainer, IJclDoubleEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclDoubleContainer, IJclDoubleEqualityComparer,
     IJclDoubleCollection, IJclDoubleSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -424,7 +435,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -463,8 +474,9 @@ type
   end;
 
   TJclExtendedHashSet = class(TJclExtendedAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclExtendedContainer, IJclExtendedEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclExtendedContainer, IJclExtendedEqualityComparer,
     IJclExtendedCollection, IJclExtendedSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -487,7 +499,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -536,8 +548,9 @@ type
   {$ENDIF MATH_SINGLE_PRECISION}
 
   TJclIntegerHashSet = class(TJclIntegerAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclIntegerEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclIntegerEqualityComparer,
     IJclIntegerCollection, IJclIntegerSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -557,7 +570,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -596,8 +609,9 @@ type
   end;
 
   TJclCardinalHashSet = class(TJclCardinalAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclCardinalEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclCardinalEqualityComparer,
     IJclCardinalCollection, IJclCardinalSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -617,7 +631,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -656,8 +670,9 @@ type
   end;
 
   TJclInt64HashSet = class(TJclInt64AbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclInt64EqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclInt64EqualityComparer,
     IJclInt64Collection, IJclInt64Set)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -677,7 +692,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -716,8 +731,9 @@ type
   end;
 
   TJclPtrHashSet = class(TJclPtrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclPtrEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclPtrEqualityComparer,
     IJclPtrCollection, IJclPtrSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -737,7 +753,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -776,8 +792,9 @@ type
   end;
 
   TJclHashSet = class(TJclAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclObjectOwner, IJclEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclObjectOwner, IJclEqualityComparer,
     IJclCollection, IJclSet)
+
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -800,7 +817,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -839,10 +856,12 @@ type
   end;
 
   {$IFDEF SUPPORTS_GENERICS}
+  //DOM-IGNORE-BEGIN
 
   TJclHashSet<T> = class(TJclAbstractContainer<T>, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclItemOwner<T>, IJclEqualityComparer<T>,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclItemOwner<T>, IJclEqualityComparer<T>,
     IJclCollection<T>, IJclSet<T>)
+
   public
     { IJclItemOwner<T> }
     function FreeItem(var AItem: T): T; override;
@@ -862,7 +881,7 @@ type
     procedure SetAutoPackParameter(Value: Integer); override;
     procedure SetAutoPackStrategy(Value: TJclAutoPackStrategy); override;
     procedure SetCapacity(Value: Integer); override;
-    { IJclContainer }
+    { IJclBaseContainer }
     function GetAllowDefaultElements: Boolean; override;
     function GetDuplicates: TDuplicates; override;
     function GetReadOnly: Boolean; override;
@@ -902,7 +921,7 @@ type
 
   // E = External helper to compare items for equality
   TJclHashSetE<T> = class(TJclHashSet<T>, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclCollection<T>, IJclSet<T>,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclCollection<T>, IJclSet<T>,
     IJclItemOwner<T>, IJclEqualityComparer<T>)
   private
     FEqualityComparer: IJclEqualityComparer<T>;
@@ -923,7 +942,7 @@ type
 
   // F = Function to compare items for equality
   TJclHashSetF<T> = class(TJclHashSet<T>, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclContainer, IJclCollection<T>, IJclSet<T>,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclBaseContainer, IJclCollection<T>, IJclSet<T>,
     IJclItemOwner<T>, IJclEqualityComparer<T>)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -936,7 +955,7 @@ type
   // I = Items can compare themselves to an other
   TJclHashSetI<T: IEquatable<T>, IComparable<T>, IHashable> = class(TJclHashSet<T>,
     {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE} IJclIntfCloneable, IJclCloneable, IJclPackable,
-    IJclContainer, IJclCollection<T>, IJclSet<T>, IJclItemOwner<T>, IJclEqualityComparer<T>)
+    IJclBaseContainer, IJclCollection<T>, IJclSet<T>, IJclItemOwner<T>, IJclEqualityComparer<T>)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
   public
@@ -945,6 +964,8 @@ type
     { IJclEqualityComparer<T> }
     function ItemsEqual(const A, B: T): Boolean; override;
   end;
+
+  //DOM-IGNORE-END
   {$ENDIF SUPPORTS_GENERICS}
 
 {$IFDEF UNITVERSIONING}
@@ -982,6 +1003,7 @@ begin
 end;
 
 {$IFDEF SUPPORTS_GENERICS}
+//DOM-IGNORE-BEGIN
 
 //=== { TRefUnique } ==========================================================
 
@@ -1004,6 +1026,8 @@ function TRefUnique.Equals(Other: TRefUnique): Boolean;
 begin
   Result := Self = Other;
 end;
+
+//DOM-IGNORE-END
 {$ENDIF SUPPORTS_GENERICS}
 
 //=== { TJclIntfHashSet } =====================================================
@@ -5408,6 +5432,7 @@ begin
 end;
 
 {$IFDEF SUPPORTS_GENERICS}
+//DOM-IGNORE-BEGIN
 
 //=== { TJclHashSet<T> } =====================================================
 
@@ -5865,6 +5890,7 @@ begin
     Result := A.Equals(B);
 end;
 
+//DOM-IGNORE-END
 {$ENDIF SUPPORTS_GENERICS}
 
 initialization

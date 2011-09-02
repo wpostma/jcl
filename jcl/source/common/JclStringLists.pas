@@ -41,11 +41,19 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF MSWINDOWS}
+  System.Variants,
+  System.Classes, System.SysUtils,
+  {$ELSE ~HAS_UNITSCOPE}
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF MSWINDOWS}
   Variants,
   Classes, SysUtils,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase,
   JclPCRE;
 
@@ -55,6 +63,8 @@ uses
 {$ENDIF FPC}
 
 type
+  EJclStringListError = class(EJclError);
+
   IJclStringList = interface;
 
   TJclStringListObjectsMode = (omNone, omObjects, omVariants, omInterfaces);
@@ -388,7 +398,11 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.TypInfo,
+  {$ELSE ~HAS_UNITSCOPE}
   TypInfo,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclFileUtils,
   JclStrings;
 
@@ -587,7 +601,7 @@ var
 begin
   AutoUpdateControl;
   for I := 0 to LastIndex do
-    Strings[I] := SysUtils.Trim(Strings[I]);
+    Strings[I] := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}SysUtils.Trim(Strings[I]);
   Result := FSelfAsInterface;
 end;
 
@@ -938,7 +952,7 @@ begin
   begin
     if FObjectsMode <> omNone then
     begin
-      raise Exception.CreateFmt('Objects cannot be used as "%s" because it has been used as "%s".',
+      raise EJclStringListError.CreateFmt('Objects cannot be used as "%s" because it has been used as "%s".',
         [GetEnumName(TypeInfo(TJclStringListObjectsMode), Ord(AMode)),
         GetEnumName(TypeInfo(TJclStringListObjectsMode), Ord(FObjectsMode))]);
     end;
@@ -1226,7 +1240,7 @@ var
 begin
   AutoUpdateControl;
   for I := LastIndex downto 0 do
-    if SysUtils.Trim(Strings[I]) = '' then
+    if {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}SysUtils.Trim(Strings[I]) = '' then
       Delete(I);
   Result := FSelfAsInterface;
 end;

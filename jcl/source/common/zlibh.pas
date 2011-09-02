@@ -72,6 +72,8 @@ uses
   {$ENDIF UNITVERSIONING}
   JclBase;
 
+//DOM-IGNORE-BEGIN
+
 {$IFNDEF FPC}
 type
   {$IFDEF UNIX}
@@ -2018,6 +2020,8 @@ const
   DEF_MEM_LEVEL = 8;
   {$EXTERNALSYM DEF_MEM_LEVEL}
 
+//DOM-IGNORE-END
+
 function IsZLibLoaded: Boolean;
 function LoadZLib: Boolean;
 procedure UnloadZLib;
@@ -2037,7 +2041,11 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.SysUtils;
+  {$ELSE ~HAS_UNITSCOPE}
   SysUtils;
+  {$ENDIF ~HAS_UNITSCOPE}
 
 //-----------------------------------------------------------------------------
 //

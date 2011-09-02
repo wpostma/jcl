@@ -33,7 +33,7 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date::                                                                         $ }
+{ Last modified: $Date::                                                                        $ }
 { Revision:      $Rev::                                                                          $ }
 { Author:        $Author::                                                                       $ }
 {                                                                                                  }
@@ -50,7 +50,11 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.Windows, System.Classes, System.SysUtils, System.TypInfo, System.Contnrs,
+  {$ELSE ~HAS_UNITSCOPE}
   Windows, Classes, SysUtils, TypInfo, Contnrs,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase, JclDateTime, JclFileUtils, JclSysInfo, JclWin32;
 
 type
@@ -940,17 +944,36 @@ function PeCreateRequiredImportList(const FileName: TFileName; RequiredImportsLi
 // Mapped or loaded image related routines
 // use PeMapImgNtHeaders32
 // function PeMapImgNtHeaders(const BaseAddress: Pointer): PImageNtHeaders;
-function PeMapImgNtHeaders32(const BaseAddress: Pointer): PImageNtHeaders32;
-function PeMapImgNtHeaders64(const BaseAddress: Pointer): PImageNtHeaders64;
+function PeMapImgNtHeaders32(const BaseAddress: Pointer): PImageNtHeaders32; overload;
+function PeMapImgNtHeaders32(Stream: TStream; const BasePosition: Int64; out NtHeaders32: TImageNtHeaders32): Int64; overload;
+function PeMapImgNtHeaders64(const BaseAddress: Pointer): PImageNtHeaders64; overload;
+function PeMapImgNtHeaders64(Stream: TStream; const BasePosition: Int64; out NtHeaders64: TImageNtHeaders64): Int64; overload;
 
 function PeMapImgLibraryName(const BaseAddress: Pointer): string;
-function PeMapImgSize(const BaseAddress: Pointer): DWORD;
-function PeMapImgTarget(const BaseAddress: Pointer): TJclPeTarget;
+function PeMapImgLibraryName32(const BaseAddress: Pointer): string;
+function PeMapImgLibraryName64(const BaseAddress: Pointer): string;
+
+function PeMapImgSize(const BaseAddress: Pointer): DWORD; overload;
+function PeMapImgSize(Stream: TStream; const BasePosition: Int64): DWORD; overload;
+function PeMapImgSize32(const BaseAddress: Pointer): DWORD; overload;
+function PeMapImgSize32(Stream: TStream; const BasePosition: Int64): DWORD; overload;
+function PeMapImgSize64(const BaseAddress: Pointer): DWORD; overload;
+function PeMapImgSize64(Stream: TStream; const BasePosition: Int64): DWORD; overload;
+
+function PeMapImgTarget(const BaseAddress: Pointer): TJclPeTarget; overload;
+function PeMapImgTarget(Stream: TStream; const BasePosition: Int64): TJclPeTarget; overload;
+
+type
+  TImageSectionHeaderArray = array of TImageSectionHeader;
 
 // use PeMapImgSections32
 // function PeMapImgSections(NtHeaders: PImageNtHeaders): PImageSectionHeader;
-function PeMapImgSections32(NtHeaders: PImageNtHeaders32): PImageSectionHeader;
-function PeMapImgSections64(NtHeaders: PImageNtHeaders64): PImageSectionHeader;
+function PeMapImgSections32(NtHeaders: PImageNtHeaders32): PImageSectionHeader; overload;
+function PeMapImgSections32(Stream: TStream; const NtHeaders32Position: Int64; const NtHeaders32: TImageNtHeaders32;
+  out ImageSectionHeaders: TImageSectionHeaderArray): Int64; overload;
+function PeMapImgSections64(NtHeaders: PImageNtHeaders64): PImageSectionHeader; overload;
+function PeMapImgSections64(Stream: TStream; const NtHeaders64Position: Int64; const NtHeaders64: TImageNtHeaders64;
+  out ImageSectionHeaders: TImageSectionHeaderArray): Int64; overload;
 
 // use PeMapImgFindSection32
 // function PeMapImgFindSection(NtHeaders: PImageNtHeaders;
@@ -959,6 +982,8 @@ function PeMapImgFindSection32(NtHeaders: PImageNtHeaders32;
   const SectionName: string): PImageSectionHeader;
 function PeMapImgFindSection64(NtHeaders: PImageNtHeaders64;
   const SectionName: string): PImageSectionHeader;
+function PeMapImgFindSection(const ImageSectionHeaders: TImageSectionHeaderArray;
+  const SectionName: string): SizeInt;
 
 function PeMapImgFindSectionFromModule(const BaseAddress: Pointer;
   const SectionName: string): PImageSectionHeader;
@@ -1077,6 +1102,17 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.RTLConsts,
+  {$IFDEF HAS_UNIT_CHARACTER}
+  System.Character,
+  {$ENDIF HAS_UNIT_CHARACTER}
+  {$ELSE ~HAS_UNITSCOPE}
+  RTLConsts,
+  {$IFDEF HAS_UNIT_CHARACTER}
+  Character,
+  {$ENDIF HAS_UNIT_CHARACTER}
+  {$ENDIF ~HAS_UNITSCOPE}
   JclLogic, JclResources, JclSysUtils, JclStrings, JclStringConversions;
 
 const
@@ -2063,7 +2099,14 @@ function TJclPeExportFuncItem.GetIsExportedVariable: Boolean;
 begin
   case FExportList.Image.Target of
     taWin32:
+    begin
+      {$IFDEF DELPHI64_TEMPORARY}
+      System.Error(rePlatformNotImplemented);//there is no BaseOfData in the 32-bit header for Win64
+      Result := False;
+      {$ELSE ~DELPHI64_TEMPORARY}
       Result := (Address >= FExportList.Image.OptionalHeader32.BaseOfData);
+      {$ENDIF ~DELPHI64_TEMPORARY}
+    end;
     taWin64:
       Result := False;
       // TODO equivalent for 64-bit modules
@@ -2259,7 +2302,7 @@ end;
 procedure TJclPeExportFuncList.CreateList;
 var
   Functions: Pointer;
-  Address: DWORD;
+  Address, NameCount: DWORD;
   NameOrdinals: PWORD;
   Names: PDWORD;
   I: Integer;
@@ -2285,10 +2328,12 @@ begin
       Functions := RvaToVa(FExportDir^.AddressOfFunctions);
       NameOrdinals := RvaToVa(FExportDir^.AddressOfNameOrdinals);
       Names := RvaToVa(FExportDir^.AddressOfNames);
-      Count := FExportDir^.NumberOfNames;
-      for I := 0 to FExportDir^.NumberOfNames - 1 do
+      NameCount := FExportDir^.NumberOfNames;
+      Count := FExportDir^.NumberOfFunctions;
+
+      for I := 0 to Count - 1 do
       begin
-        Address := PDWORD(TJclAddr(Functions) + NameOrdinals^ * SizeOf(DWORD))^;
+        Address := PDWORD(TJclAddr(Functions) + TJclAddr(I) * SizeOf(DWORD))^;
         if (Address >= ExportVABegin) and (Address <= ExportVAEnd) then
         begin
           FAnyForwards := True;
@@ -2299,13 +2344,23 @@ begin
         else
           ForwardedName := '';
 
+        ExportItem := TJclPeExportFuncItem.Create(Self, '',
+          ForwardedName, Address, $FFFF, TJclAddr(I) + FBase, icNotChecked);
+
+        List{$IFNDEF RTL230_UP}^{$ENDIF !RTL230_UP}[I] := ExportItem;
+      end;
+
+      for I := 0 to NameCount - 1 do
+      begin
+          // named function
         UTF8Name := PAnsiChar(RvaToVa(Names^));
         if not TryUTF8ToString(UTF8Name, ExportName) then
           ExportName := string(UTF8Name);
-        ExportItem := TJclPeExportFuncItem.Create(Self, ExportName,
-          ForwardedName, Address, I, DWORD(NameOrdinals^) + FBase, icNotChecked);
 
-        List^[I] := ExportItem;
+        ExportItem := TJclPeExportFuncItem(List{$IFNDEF RTL230_UP}^{$ENDIF !RTL230_UP}[NameOrdinals^]);
+        ExportItem.FName := ExportName;
+        ExportItem.FHint := I;
+
         Inc(NameOrdinals);
         Inc(Names);
       end;
@@ -3443,7 +3498,11 @@ function TJclPeImage.GetHeaderValues(Index: TJclPeHeader): string;
       JclPeHeader_BaseOfCode:
         Result := IntToHex(OptionalHeader.BaseOfCode, 8);
       JclPeHeader_BaseOfData:
+        {$IFDEF DELPHI64_TEMPORARY}
+        System.Error(rePlatformNotImplemented);
+        {$ELSE ~DELPHI64_TEMPORARY}
         Result := IntToHex(OptionalHeader.BaseOfData, 8);
+        {$ENDIF ~DELPHI64_TEMPORARY}
       JclPeHeader_ImageBase:
         Result := IntToHex(OptionalHeader.ImageBase, 8);
       JclPeHeader_SectionAlignment:
@@ -4976,9 +5035,11 @@ function PeRebaseImage32(const ImageName: TFileName; NewBase: TJclAddr32;
   end;
 
 {$IFDEF CPU64}
+{$IFNDEF DELPHI64_TEMPORARY}
 var
   NewIB, OldIB: QWord;
 {$ENDIF CPU64}
+{$ENDIF ~DELPHI64_TEMPORARY}
 begin
   if NewBase = 0 then
     NewBase := CalculateBaseAddress;
@@ -4991,12 +5052,16 @@ begin
       OldImageSize, OldImageBase, NewImageSize, NewImageBase, TimeStamp));
     {$ENDIF CPU32}
     {$IFDEF CPU64}
+    {$IFDEF DELPHI64_TEMPORARY}
+    System.Error(rePlatformNotImplemented);
+    {$ELSE ~DELPHI64_TEMPORARY}
     NewIB := NewImageBase;
     OldIB := OldImageBase;
     Win32Check(ReBaseImage(PAnsiChar(AnsiString(ImageName)), nil, True, False, False, MaxNewSize,
       OldImageSize, OldIB, NewImageSize, NewIB, TimeStamp));
     NewImageBase := NewIB;
     OldImageBase := OldIB;
+    {$ENDIF ~DELPHI64_TEMPORARY}
     {$ENDIF CPU64}
   end;
 end;
@@ -5682,6 +5747,31 @@ begin
       Result := nil
 end;
 
+function PeMapImgNtHeaders32(Stream: TStream; const BasePosition: Int64; out NtHeaders32: TImageNtHeaders32): Int64;
+var
+  ImageDosHeader: TImageDosHeader;
+begin
+  ResetMemory(NtHeaders32, SizeOf(NtHeaders32));
+  Result := -1;
+
+  if (Stream.Seek(BasePosition, soBeginning) <> BasePosition) or
+    (Stream.Read(ImageDosHeader, SizeOf(ImageDosHeader)) <> SizeOf(ImageDosHeader)) then
+    raise EJclPeImageError.CreateRes(@SReadError);
+
+  if (ImageDosHeader.e_magic <> IMAGE_DOS_SIGNATURE) or
+    (ImageDosHeader._lfanew = 0) then
+    Exit;
+
+  Result := BasePosition + DWORD(ImageDosHeader._lfanew);
+
+  if (Stream.Seek(Result, soBeginning) <> Result) or
+    (Stream.Read(NtHeaders32, SizeOf(NtHeaders32)) <> SizeOf(NtHeaders32)) then
+    raise EJclPeImageError.CreateRes(@SReadError);
+
+  if NtHeaders32.Signature <> IMAGE_NT_SIGNATURE then
+    Result := -1;
+end;
+
 function PeMapImgNtHeaders64(const BaseAddress: Pointer): PImageNtHeaders64;
 begin
   Result := nil;
@@ -5696,25 +5786,32 @@ begin
       Result := nil
 end;
 
+function PeMapImgNtHeaders64(Stream: TStream; const BasePosition: Int64; out NtHeaders64: TImageNtHeaders64): Int64;
+var
+  ImageDosHeader: TImageDosHeader;
+begin
+  ResetMemory(NtHeaders64, SizeOf(NtHeaders64));
+  Result := -1;
+
+  if (Stream.Seek(BasePosition, soBeginning) <> BasePosition) or
+    (Stream.Read(ImageDosHeader, SizeOf(ImageDosHeader)) <> SizeOf(ImageDosHeader)) then
+    raise EJclPeImageError.CreateRes(@SReadError);
+
+  if (ImageDosHeader.e_magic <> IMAGE_DOS_SIGNATURE) or
+    (ImageDosHeader._lfanew = 0) then
+    Exit;
+
+  Result := BasePosition + DWORD(ImageDosHeader._lfanew);
+
+  if (Stream.Seek(Result, soBeginning) <> Result) or
+    (Stream.Read(NtHeaders64, SizeOf(NtHeaders64)) <> SizeOf(NtHeaders64)) then
+    raise EJclPeImageError.CreateRes(@SReadError);
+
+  if NtHeaders64.Signature <> IMAGE_NT_SIGNATURE then
+    Result := -1;
+end;
+
 function PeMapImgSize(const BaseAddress: Pointer): DWORD;
-  function PeMapImgSize32(const BaseAddress: Pointer): DWORD;
-  var
-    NtHeaders32: PImageNtHeaders32;
-  begin
-    Result := 0;
-    NtHeaders32 := PeMapImgNtHeaders32(BaseAddress);
-    if Assigned(NtHeaders32) then
-      Result := NtHeaders32^.OptionalHeader.SizeOfImage;
-  end;
-  function PeMapImgSize64(const BaseAddress: Pointer): DWORD;
-  var
-    NtHeaders64: PImageNtHeaders64;
-  begin
-    Result := 0;
-    NtHeaders64 := PeMapImgNtHeaders64(BaseAddress);
-    if Assigned(NtHeaders64) then
-      Result := NtHeaders64^.OptionalHeader.SizeOfImage;
-  end;
 begin
   case PeMapImgTarget(BaseAddress) of
     taWin32:
@@ -5727,49 +5824,58 @@ begin
   end;
 end;
 
+function PeMapImgSize(Stream: TStream; const BasePosition: Int64): DWORD;
+begin
+  case PeMapImgTarget(Stream, BasePosition) of
+    taWin32:
+      Result := PeMapImgSize32(Stream, BasePosition);
+    taWin64:
+      Result := PeMapImgSize64(Stream, BasePosition);
+    //taUnknown:
+  else
+    Result := 0;
+  end;
+end;
+
+function PeMapImgSize32(const BaseAddress: Pointer): DWORD;
+var
+  NtHeaders32: PImageNtHeaders32;
+begin
+  Result := 0;
+  NtHeaders32 := PeMapImgNtHeaders32(BaseAddress);
+  if Assigned(NtHeaders32) then
+    Result := NtHeaders32^.OptionalHeader.SizeOfImage;
+end;
+
+function PeMapImgSize32(Stream: TStream; const BasePosition: Int64): DWORD;
+var
+  NtHeaders32: TImageNtHeaders32;
+begin
+  Result := 0;
+  if PeMapImgNtHeaders32(Stream, BasePosition, NtHeaders32) <> -1 then
+    Result := NtHeaders32.OptionalHeader.SizeOfImage;
+end;
+
+function PeMapImgSize64(const BaseAddress: Pointer): DWORD;
+var
+  NtHeaders64: PImageNtHeaders64;
+begin
+  Result := 0;
+  NtHeaders64 := PeMapImgNtHeaders64(BaseAddress);
+  if Assigned(NtHeaders64) then
+    Result := NtHeaders64^.OptionalHeader.SizeOfImage;
+end;
+
+function PeMapImgSize64(Stream: TStream; const BasePosition: Int64): DWORD;
+var
+  NtHeaders64: TImageNtHeaders64;
+begin
+  Result := 0;
+  if PeMapImgNtHeaders64(Stream, BasePosition, NtHeaders64) <> -1 then
+    Result := NtHeaders64.OptionalHeader.SizeOfImage;
+end;
+
 function PeMapImgLibraryName(const BaseAddress: Pointer): string;
-  function PeMapImgLibraryName32(const BaseAddress: Pointer): string;
-  var
-    NtHeaders: PImageNtHeaders32;
-    DataDir: TImageDataDirectory;
-    ExportDir: PImageExportDirectory;
-    UTF8Name: TUTF8String;
-  begin
-    Result := '';
-    NtHeaders := PeMapImgNtHeaders32(BaseAddress);
-    if NtHeaders = nil then
-      Exit;
-    DataDir := NtHeaders^.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
-    if DataDir.Size = 0 then
-      Exit;
-    ExportDir := PImageExportDirectory(TJclAddr(BaseAddress) + DataDir.VirtualAddress);
-    if IsBadReadPtr(ExportDir, SizeOf(TImageExportDirectory)) or (ExportDir^.Name = 0) then
-      Exit;
-    UTF8Name := PAnsiChar(TJclAddr(BaseAddress) + ExportDir^.Name);
-    if not TryUTF8ToString(UTF8Name, Result) then
-      Result := string(UTF8Name);
-  end;
-  function PeMapImgLibraryName64(const BaseAddress: Pointer): string;
-  var
-    NtHeaders: PImageNtHeaders64;
-    DataDir: TImageDataDirectory;
-    ExportDir: PImageExportDirectory;
-    UTF8Name: TUTF8String;
-  begin
-    Result := '';
-    NtHeaders := PeMapImgNtHeaders64(BaseAddress);
-    if NtHeaders = nil then
-      Exit;
-    DataDir := NtHeaders^.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
-    if DataDir.Size = 0 then
-      Exit;
-    ExportDir := PImageExportDirectory(TJclAddr(BaseAddress) + DataDir.VirtualAddress);
-    if IsBadReadPtr(ExportDir, SizeOf(TImageExportDirectory)) or (ExportDir^.Name = 0) then
-      Exit;
-    UTF8Name := PAnsiChar(TJclAddr(BaseAddress) + ExportDir^.Name);
-    if not TryUTF8ToString(UTF8Name, Result) then
-      Result := string(UTF8Name);
-  end;
 begin
   case PeMapImgTarget(BaseAddress) of
     taWin32:
@@ -5780,6 +5886,50 @@ begin
   else
     Result := '';
   end;
+end;
+
+function PeMapImgLibraryName32(const BaseAddress: Pointer): string;
+var
+  NtHeaders: PImageNtHeaders32;
+  DataDir: TImageDataDirectory;
+  ExportDir: PImageExportDirectory;
+  UTF8Name: TUTF8String;
+begin
+  Result := '';
+  NtHeaders := PeMapImgNtHeaders32(BaseAddress);
+  if NtHeaders = nil then
+    Exit;
+  DataDir := NtHeaders^.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+  if DataDir.Size = 0 then
+    Exit;
+  ExportDir := PImageExportDirectory(TJclAddr(BaseAddress) + DataDir.VirtualAddress);
+  if IsBadReadPtr(ExportDir, SizeOf(TImageExportDirectory)) or (ExportDir^.Name = 0) then
+    Exit;
+  UTF8Name := PAnsiChar(TJclAddr(BaseAddress) + ExportDir^.Name);
+  if not TryUTF8ToString(UTF8Name, Result) then
+    Result := string(UTF8Name);
+end;
+
+function PeMapImgLibraryName64(const BaseAddress: Pointer): string;
+var
+  NtHeaders: PImageNtHeaders64;
+  DataDir: TImageDataDirectory;
+  ExportDir: PImageExportDirectory;
+  UTF8Name: TUTF8String;
+begin
+  Result := '';
+  NtHeaders := PeMapImgNtHeaders64(BaseAddress);
+  if NtHeaders = nil then
+    Exit;
+  DataDir := NtHeaders^.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+  if DataDir.Size = 0 then
+    Exit;
+  ExportDir := PImageExportDirectory(TJclAddr(BaseAddress) + DataDir.VirtualAddress);
+  if IsBadReadPtr(ExportDir, SizeOf(TImageExportDirectory)) or (ExportDir^.Name = 0) then
+    Exit;
+  UTF8Name := PAnsiChar(TJclAddr(BaseAddress) + ExportDir^.Name);
+  if not TryUTF8ToString(UTF8Name, Result) then
+    Result := string(UTF8Name);
 end;
 
 function PeMapImgTarget(const BaseAddress: Pointer): TJclPeTarget;
@@ -5798,6 +5948,23 @@ begin
     end;
 end;
 
+function PeMapImgTarget(Stream: TStream; const BasePosition: Int64): TJclPeTarget;
+var
+  ImageNtHeaders: TImageNtHeaders32;
+begin
+  Result := taUnknown;
+
+  if PeMapImgNtHeaders32(Stream, BasePosition, ImageNtHeaders) <> -1 then
+  begin
+    case ImageNtHeaders.FileHeader.Machine of
+      IMAGE_FILE_MACHINE_I386:
+        Result := taWin32;
+      IMAGE_FILE_MACHINE_AMD64:
+        Result := taWin64;
+    end;
+  end;
+end;
+
 function PeMapImgSections32(NtHeaders: PImageNtHeaders32): PImageSectionHeader;
 begin
   if NtHeaders = nil then
@@ -5807,6 +5974,28 @@ begin
       NtHeaders^.FileHeader.SizeOfOptionalHeader);
 end;
 
+function PeMapImgSections32(Stream: TStream; const NtHeaders32Position: Int64; const NtHeaders32: TImageNtHeaders32;
+  out ImageSectionHeaders: TImageSectionHeaderArray): Int64;
+var
+  SectionSize: Integer;
+begin
+  if NtHeaders32Position = -1 then
+  begin
+    SetLength(ImageSectionHeaders, 0);
+    Result := -1;
+  end
+  else
+  begin
+    SetLength(ImageSectionHeaders, NtHeaders32.FileHeader.NumberOfSections);
+    Result := NtHeaders32Position + SizeOf(NtHeaders32.Signature) + SizeOf(NtHeaders32.FileHeader) + NtHeaders32.FileHeader.SizeOfOptionalHeader;
+
+    SectionSize := SizeOf(ImageSectionHeaders[0]) * Length(ImageSectionHeaders);
+    if (Stream.Seek(Result, soBeginning) <> Result) or
+      (Stream.Read(ImageSectionHeaders[0], SectionSize) <> SectionSize) then
+      raise EJclPeImageError.CreateRes(@SReadError);
+  end;
+end;
+
 function PeMapImgSections64(NtHeaders: PImageNtHeaders64): PImageSectionHeader;
 begin
   if NtHeaders = nil then
@@ -5814,6 +6003,28 @@ begin
   else
     Result := PImageSectionHeader(TJclAddr(@NtHeaders^.OptionalHeader) +
       NtHeaders^.FileHeader.SizeOfOptionalHeader);
+end;
+
+function PeMapImgSections64(Stream: TStream; const NtHeaders64Position: Int64; const NtHeaders64: TImageNtHeaders64;
+  out ImageSectionHeaders: TImageSectionHeaderArray): Int64;
+var
+  SectionSize: Integer;
+begin
+  if NtHeaders64Position = -1 then
+  begin
+    SetLength(ImageSectionHeaders, 0);
+    Result := -1;
+  end
+  else
+  begin
+    SetLength(ImageSectionHeaders, NtHeaders64.FileHeader.NumberOfSections);
+    Result := NtHeaders64Position + SizeOf(NtHeaders64.Signature) + SizeOf(NtHeaders64.FileHeader) + NtHeaders64.FileHeader.SizeOfOptionalHeader;
+
+    SectionSize := SizeOf(ImageSectionHeaders[0]) * Length(ImageSectionHeaders);
+    if (Stream.Seek(Result, soBeginning) <> Result) or
+      (Stream.Read(ImageSectionHeaders[0], SectionSize) <> SectionSize) then
+      raise EJclPeImageError.CreateRes(@SReadError);
+  end;
 end;
 
 function PeMapImgFindSection32(NtHeaders: PImageNtHeaders32;
@@ -5831,15 +6042,14 @@ begin
       UTF8Name := TUTF8String(SectionName);
     P := PAnsiChar(UTF8Name);
     Header := PeMapImgSections32(NtHeaders);
-    with NtHeaders^ do
-      for I := 1 to FileHeader.NumberOfSections do
-        if StrLComp(PAnsiChar(@Header^.Name), P, IMAGE_SIZEOF_SHORT_NAME) = 0 then
-        begin
-          Result := Header;
-          Break;
-        end
-        else
-          Inc(Header);
+    for I := 1 to NtHeaders^.FileHeader.NumberOfSections do
+      if StrLComp(PAnsiChar(@Header^.Name), P, IMAGE_SIZEOF_SHORT_NAME) = 0 then
+      begin
+        Result := Header;
+        Break;
+      end
+      else
+        Inc(Header);
   end;
 end;
 
@@ -5858,16 +6068,33 @@ begin
       UTF8Name := TUTF8String(SectionName);
     P := PAnsiChar(UTF8Name);
     Header := PeMapImgSections64(NtHeaders);
-    with NtHeaders^ do
-      for I := 1 to FileHeader.NumberOfSections do
-        if StrLComp(PAnsiChar(@Header^.Name), P, IMAGE_SIZEOF_SHORT_NAME) = 0 then
-        begin
-          Result := Header;
-          Break;
-        end
-        else
-          Inc(Header);
+    for I := 1 to NtHeaders^.FileHeader.NumberOfSections do
+      if StrLComp(PAnsiChar(@Header^.Name), P, IMAGE_SIZEOF_SHORT_NAME) = 0 then
+      begin
+        Result := Header;
+        Break;
+      end
+      else
+        Inc(Header);
   end;
+end;
+
+function PeMapImgFindSection(const ImageSectionHeaders: TImageSectionHeaderArray;
+  const SectionName: string): SizeInt;
+var
+  P: PAnsiChar;
+  UTF8Name: TUTF8String;
+begin
+  if Length(ImageSectionHeaders) > 0 then
+  begin
+    if not TryStringToUTF8(SectionName, UTF8Name) then
+      UTF8Name := TUTF8String(SectionName);
+    P := PAnsiChar(UTF8Name);
+    for Result := Low(ImageSectionHeaders) to High(ImageSectionHeaders) do
+      if StrLComp(PAnsiChar(@ImageSectionHeaders[Result].Name), P, IMAGE_SIZEOF_SHORT_NAME) = 0 then
+        Exit;
+  end;
+  Result := -1;
 end;
 
 function PeMapImgFindSectionFromModule(const BaseAddress: Pointer;
@@ -6242,12 +6469,17 @@ begin
 end;
 
 // Image access under a debbuger
-
+{$IFDEF USE_64BIT_TYPES}
+function InternalReadProcMem(ProcessHandle: THandle; Address: DWORD;
+  Buffer: Pointer; Size: SIZE_T): Boolean;
+var
+  BR: SIZE_T;
+{$ELSE}
 function InternalReadProcMem(ProcessHandle: THandle; Address: DWORD;
   Buffer: Pointer; Size: Integer): Boolean;
-// TODO 64 bit version
 var
   BR: DWORD;
+{$ENDIF}
 begin
   BR := 0;
   Result := ReadProcessMemory(ProcessHandle, Pointer(Address), Buffer, Size, BR);
@@ -6461,7 +6693,7 @@ begin
     Result := urError;
   end;
   NameU^ := #0;
-  SetLength(UTF8Unmangled, SysUtils.StrLen(PAnsiChar(UTF8Unmangled))); // SysUtils prefix due to compiler bug
+  SetLength(UTF8Unmangled, {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}SysUtils.StrLen(PAnsiChar(UTF8Unmangled))); // SysUtils prefix due to compiler bug
   if not TryUTF8ToString(UTF8Unmangled, Unmangled) then
     Unmangled := string(UTF8Unmangled);
 end;

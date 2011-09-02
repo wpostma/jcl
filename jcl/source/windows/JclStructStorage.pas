@@ -63,6 +63,7 @@ of "structured storage"...
 unit JclStructStorage;
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 interface
 
@@ -70,7 +71,11 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.Windows, System.Classes, System.SysUtils, Winapi.ActiveX,
+  {$ELSE ~HAS_UNITSCOPE}
   Windows, Classes, SysUtils, ActiveX,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase;
 
 type
@@ -240,7 +245,11 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.Win.ComObj,
+  {$ELSE ~HAS_UNITSCOPE}
   ComObj,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclResources;
 
 var
@@ -345,7 +354,7 @@ begin
   else
   begin
     {$IFDEF SUPPORTS_UNICODE}
-    Result := PChar(S);
+    Result := PWideChar(S);
     {$ELSE ~SUPPORTS_UNICODE}
     Result := AllocMem((Length(S)+1) * SizeOf(WideChar));
     MultiByteToWideChar(CP_ACP, 0, PChar(S), Length(S), Result, Length(S));
@@ -358,8 +367,10 @@ end;
 
 procedure FreeWChar(W: PWideChar);
 begin
+  {$IFNDEF SUPPORTS_UNICODE}
   if Assigned(W) then
     FreeMem(W);
+  {$ENDIF ~SUPPORTS_UNICODE}
 end;
 
 //=== { TJclStructStorageFolder } ============================================

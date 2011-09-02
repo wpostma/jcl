@@ -172,11 +172,17 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF MSWINDOWS}
+  System.SysUtils, System.Classes,
+  {$ELSE ~HAS_UNITSCOPE}
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF MSWINDOWS}
-  SysUtils,
-  Classes,
+  SysUtils, Classes,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase;
 
 {$IFNDEF FPC}
@@ -285,7 +291,7 @@ type
     ccBidiControl,           // Format control characters which have specific functions in the Unicode Bidirectional Algorithm [UAX9].
     ccDash,                  // Punctuation characters explicitly called out as dashes in the Unicode Standard, plus their compatibility equivalents. Most of these have the General_Category value Pd, but some have the General_Category value Sm because of their use in mathematics.
     ccDeprecated,            // For a machine-readable list of deprecated characters. No characters will ever be removed from the standard, but the usage of deprecated characters is strongly discouraged.
-    ccDiacritic,             //	Characters that linguistically modify the meaning of another character to which they apply. Some diacritics are not combining characters, and some combining characters are not diacritics.
+    ccDiacritic,             // Characters that linguistically modify the meaning of another character to which they apply. Some diacritics are not combining characters, and some combining characters are not diacritics.
     ccExtender,              // Characters whose principal function is to extend the value or shape of a preceding alphabetic character. Typical of these are length and iteration marks.
     ccHyphen,                // Dashes which are used to mark connections between pieces of words, plus the Katakana middle dot. The Katakana middle dot functions like a hyphen, but is shaped like a dot rather than a dash.
     ccIdeographic,           // Characters considered to be CJKV (Chinese, Japanese, Korean, and Vietnamese) ideographs.
@@ -301,7 +307,7 @@ type
     ccOtherIDStart,          // Used for backward compatibility of ID_Start.
     ccOtherLowercase,        // Used in deriving the Lowercase property.
     ccOtherMath,             // Used in deriving the Math property.
-    ccOtherUppercase,        //	Used in deriving the Uppercase property.
+    ccOtherUppercase,        // Used in deriving the Uppercase property.
     ccPatternSyntax,         // Used for pattern syntax as described in UAX #31: Unicode Identifier and Pattern Syntax [UAX31].
     ccPatternWhiteSpace,
     ccRadical,               // Used in Ideographic Description Sequences.
@@ -340,7 +346,7 @@ type
     cftSmall,     // Small variant form (CNS compatibility)
     cftSquare,    // CJK squared font variant
     cftFraction,  // Vulgar fraction form
-    cftCompat     //	Otherwise unspecified compatibility character
+    cftCompat     // Otherwise unspecified compatibility character
   );
 
   // used to hold information about the start and end
@@ -1356,6 +1362,16 @@ procedure LoadCombiningClassData;
 procedure LoadNumberData;
 procedure LoadCompositionData;
 
+// functions around TUCS4Array
+function UCS4Array(Ch: UCS4): TUCS4Array;
+function UCS4ArrayConcat(Left, Right: UCS4): TUCS4Array; overload; {$IFDEF SUPPORTS_INLINE}inline;{$ENDIF}
+procedure UCS4ArrayConcat(var Left: TUCS4Array; Right: UCS4); overload; {$IFDEF SUPPORTS_INLINE}inline;{$ENDIF}
+procedure UCS4ArrayConcat(var Left: TUCS4Array; const Right: TUCS4Array); overload; {$IFDEF SUPPORTS_INLINE}inline;{$ENDIF}
+function UCS4ArrayEquals(const Left: TUCS4Array; const Right: TUCS4Array): Boolean; overload; {$IFDEF SUPPORTS_INLINE}inline;{$ENDIF}
+function UCS4ArrayEquals(const Left: TUCS4Array; Right: UCS4): Boolean; overload; {$IFDEF SUPPORTS_INLINE}inline;{$ENDIF}
+function UCS4ArrayEquals(const Left: TUCS4Array; const Right: AnsiString): Boolean; overload; {$IFDEF SUPPORTS_INLINE}inline;{$ENDIF}
+function UCS4ArrayEquals(const Left: TUCS4Array; Right: AnsiChar): Boolean; overload; {$IFDEF SUPPORTS_INLINE}inline;{$ENDIF}
+
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
@@ -1389,7 +1405,11 @@ implementation
 
 uses
   {$IFDEF HAS_UNIT_RTLCONSTS}
+  {$IFDEF HAS_UNITSCOPE}
+  System.RtlConsts,
+  {$ELSE ~HAS_UNITSCOPE}
   RtlConsts,
+  {$ENDIF ~HAS_UNITSCOPE}
   {$ENDIF HAS_UNIT_RTLCONSTS}
   {$IFDEF UNICODE_BZIP2_DATA}
   BZip2,
@@ -5191,7 +5211,7 @@ var
   Stream: TStream;
 begin
   try
-    Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
+    Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
     try
       LoadFromStream(Stream);
     finally
@@ -7184,6 +7204,76 @@ end;
 function TranslateString(const S: AnsiString; CP1, CP2: Word): AnsiString;
 begin
   Result:= WideStringToStringEx(StringToWideStringEx(S, CP1), CP2);
+end;
+
+function UCS4Array(Ch: UCS4): TUCS4Array;
+begin
+  SetLength(Result, 1);
+  Result[0] := Ch;
+end;
+
+function UCS4ArrayConcat(Left, Right: UCS4): TUCS4Array;
+begin
+  SetLength(Result, 2);
+  Result[0] := Left;
+  Result[1] := Right;
+end;
+
+procedure UCS4ArrayConcat(var Left: TUCS4Array; Right: UCS4);
+var
+  I: SizeInt;
+begin
+  I := Length(Left);
+  SetLength(Left, I + 1);
+  Left[I] := Right;
+end;
+
+procedure UCS4ArrayConcat(var Left: TUCS4Array; const Right: TUCS4Array);
+var
+  I, J: SizeInt;
+begin
+  I := Length(Left);
+  J := Length(Right);
+  SetLength(Left, I + J);
+  Move(Right[0], Left[I], J * SizeOf(Right[0]));
+end;
+
+function UCS4ArrayEquals(const Left: TUCS4Array; const Right: TUCS4Array): Boolean;
+var
+  I: SizeInt;
+begin
+  I := Length(Left);
+  Result := I = Length(Right);
+  while Result do
+  begin
+    Dec(I);
+    Result := (I >= 0) and (Left[I] = Right[I]);
+  end;
+  Result := I < 0;
+end;
+
+function UCS4ArrayEquals(const Left: TUCS4Array; Right: UCS4): Boolean;
+begin
+  Result := (Length(Left) = 1) and (Left[0] = Right);
+end;
+
+function UCS4ArrayEquals(const Left: TUCS4Array; const Right: AnsiString): Boolean;
+var
+  I: SizeInt;
+begin
+  I := Length(Left);
+  Result := I = Length(Right);
+  while Result do
+  begin
+    Dec(I);
+    Result := (I >= 0) and (Left[I] = Ord(Right[I + 1]));
+  end;
+  Result := I < 0;
+end;
+
+function UCS4ArrayEquals(const Left: TUCS4Array; Right: AnsiChar): Boolean;
+begin
+  Result := (Length(Left) = 1) and (Left[0] = Ord(Right));
 end;
 
 procedure PrepareUnicodeData;

@@ -74,10 +74,6 @@
 {.$DEFINE DEBUG_NO_SYMBOLS}
 
 
-// mark EDI units as weak package units (to avoid conflicts with the EDI package)
-{.$DEFINE EDI_WEAK_PACKAGE_UNITS}
-
-
 // PCRE options, mutually exclusive
 // IMPORTANT: The static link works only for Delphi 2005 and newer
 //            (an internal error is raised on other compilers)
@@ -106,6 +102,9 @@
 
 
 // Unicode options
+// use RTL Character Database rather than JCL one, less accurate but reduce executable size
+{.$DEFINE UNICODE_RTL_DATABASE}
+
 // insert a replacement character if sequence is corrupted rather than raising an exception
 {.$DEFINE UNICODE_SILENT_FAILURE}
 
@@ -117,8 +116,9 @@
 
 // container options
 // define mapping of TJclStr* containers to TJclAnsiStr* or TJclWideStr* (mutually exclusive)
-{.$DEFINE CONTAINER_ANSISTR} // default
+{.$DEFINE CONTAINER_ANSISTR} // default for D2007 and older
 {.$DEFINE CONTAINER_WIDESTR}
+{.$DEFINE CONTAINER_UNICODESTR} // default for D2009 and newer, not supported for Delphi 2007 and older
 {.$DEFINE CONTAINER_NOSTR}
 
 

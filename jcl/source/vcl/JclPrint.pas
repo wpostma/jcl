@@ -48,7 +48,11 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.Windows, System.Classes, Vcl.StdCtrls, System.SysUtils,
+  {$ELSE ~HAS_UNITSCOPE}
   Windows, Classes, StdCtrls, SysUtils,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase;
 
 const
@@ -161,7 +165,10 @@ type
     property DpiY: Integer read FiDpiY write FiDpiY;
   end;
 
-procedure DirectPrint(const Printer, Data: string; const DocumentName: string = '');
+  TPrinterData = {$IFDEF SUPPORTS_UNICODE_STRING}RawByteString{$ELSE}AnsiString{$ENDIF};
+
+procedure DirectPrint(const Printer: string; const Data: TPrinterData;
+  const DocumentName: string = '');
 procedure SetPrinterPixelsPerInch;
 function GetPrinterResolution: TPoint;
 function CharFitsWithinDots(const Text: string; const Dots: Integer): Integer;
@@ -187,7 +194,11 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  Vcl.Graphics, System.IniFiles, Winapi.Messages, Vcl.Printers, Winapi.WinSpool,
+  {$ELSE ~HAS_UNITSCOPE}
   Graphics, IniFiles, Messages, Printers, WinSpool,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclSysInfo, JclVclResources;
 
 const
@@ -211,7 +222,7 @@ const
   cPrintSpool = 'winspool.drv';
 
 // Misc. functions
-procedure DirectPrint(const Printer, Data, DocumentName: string);
+procedure DirectPrint(const Printer: string; const Data: TPrinterData; const DocumentName: string);
 const
   cRaw = 'RAW';
 type
@@ -253,7 +264,7 @@ begin
         EJclPrinterError.CreateRes(@RsNAStartPage);
       try
         // Send the data to the printer
-        if not WritePrinter(PrinterHandle, PChar(Data), Count, BytesWritten) then
+        if not WritePrinter(PrinterHandle, PAnsiChar(Data), Count * SizeOf(AnsiChar), BytesWritten) then
           EJclPrinterError.CreateRes(@RsNASendData);
       finally
         // End the page
@@ -270,7 +281,7 @@ begin
     ClosePrinter(PrinterHandle);
   end;
   // Check to see if correct number of bytes written
-  if BytesWritten <> Count then
+  if BytesWritten <> Count * SizeOf(AnsiChar) then
     EJclPrinterError.CreateRes(@RsNATransmission);
 end;
 
@@ -451,7 +462,7 @@ begin
             Result := SetPrinter(hPrinter, 2, PI2, 0);
             if Result then
               SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0,
-                LPARAM(cWindows), SMTO_NORMAL, 1000, Needed);
+                LPARAM(cWindows), SMTO_NORMAL, 1000, {$IFDEF RTL230_UP}@{$ENDIF}Needed);
           end;
         finally
           FreeMem(PI2);
@@ -480,7 +491,7 @@ begin
             Result := WriteProfileString(cWindows, cDevice, PChar(PrinterStr));
             if Result then
               SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 0,
-                SMTO_NORMAL, 1000, Needed);
+                SMTO_NORMAL, 1000, {$IFDEF RTL230_UP}@{$ENDIF}Needed);
           end;
         finally
           FreeMem(PI2);

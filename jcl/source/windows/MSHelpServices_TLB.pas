@@ -50,12 +50,10 @@ unit MSHelpServices_TLB;
 // removing them from the $IFDEF blocks. However, such items must still be    
 // programmatically created via a method of the appropriate CoClass before    
 // they can be used.                                                          
-{$TYPEDADDRESS OFF} // Unit must be compiled without type-checked pointers. 
-{ $WARN SYMBOL_PLATFORM OFF}
-{ $WRITEABLECONST ON}
-{ $VARPROPSETTER ON}
+{ $TYPEDADDRESS OFF} // Unit must be compiled without type-checked pointers. 
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 {$IFDEF SUPPORTS_WEAKPACKAGEUNIT}
   {$IFDEF UNITVERSIONING}
@@ -71,8 +69,13 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.ActiveX, System.Classes;
+  {$ELSE ~HAS_UNITSCOPE}
   ActiveX, Classes;
-  
+  {$ENDIF ~HAS_UNITSCOPE}
+
+//DOM-IGNORE-BEGIN
 
 // *********************************************************************//
 // GUIDS declared in the TypeLibrary. Following prefixes are used:        
@@ -1590,6 +1593,8 @@ type
     class function CreateRemote(const MachineName: string): IHxRegisterProtocol;
   end;
 
+//DOM-IGNORE-END
+
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
@@ -1604,7 +1609,12 @@ const
 
 implementation
 
-uses ComObj;
+uses 
+  {$IFDEF HAS_UNITSCOPE}
+  System.Win.ComObj;
+  {$ELSE ~HAS_UNITSCOPE}
+  ComObj;
+  {$ENDIF ~HAS_UNITSCOPE}
 
 class function CoHxSession.Create: IHxSession;
 begin

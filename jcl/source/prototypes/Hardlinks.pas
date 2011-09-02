@@ -166,18 +166,24 @@
 
 unit Hardlinks;
 
+{$IFDEF JCL}
+{$I jcl.inc}
+{$I windowsonly.inc}
+
+// ALL enabled by default for Project JEDI
+{$DEFINE STDCALL}   // Make functions STDCALL always
+{$DEFINE RTDL}      // Use runtime dynamic linking
+{$DEFINE PREFERAPI} // Prefer the "real" Windows API on systems on which it exists
+                    // If this is defined STDCALL is automatically needed and defined!
+{$ENDIF JCL}
+
 {$ALIGN ON}
 {$MINENUMSIZE 4}
 
 interface
-{$IFDEF JCL        // ALL enabled by default for Project JEDI }
 
-{$I jcl.inc}
-
-{$DEFINE STDCALL   // Make functions STDCALL always }
-{$DEFINE RTDL      // Use runtime dynamic linking }
-{$DEFINE PREFERAPI // Prefer the "real" Windows API on systems on which it exists
-                   // If this is defined STDCALL is automatically needed and defined! }
+{$IFDEF JCL}
+//DOM-IGNORE-BEGIN
 {$ENDIF JCL}
 
 (*
@@ -227,6 +233,10 @@ var
   hNtDll: THandle = 0; // For runtime dynamic linking
   bRtdlFunctionsLoaded: Boolean = False; // To show wether the RTDL functions had been loaded
 {$ENDIF RTDL}
+
+{$IFDEF JCL}
+//DOM-IGNORE-END
+{$ENDIF JCL}
 
 {$IFDEF UNITVERSIONING}
 const

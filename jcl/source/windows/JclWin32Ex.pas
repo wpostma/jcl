@@ -28,6 +28,7 @@
 unit JclWin32Ex;
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 interface
 
@@ -35,7 +36,11 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
-  Windows, Sysutils;
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.Windows, System.SysUtils;
+  {$ELSE ~HAS_UNITSCOPE}
+  Windows, SysUtils;
+  {$ENDIF ~HAS_UNITSCOPE}
 
 type
   TJclWin32ExFunction = (jwfTryEnterCriticalSection, jwfSignalObjectAndWait,

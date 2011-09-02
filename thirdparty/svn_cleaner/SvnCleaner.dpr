@@ -315,6 +315,7 @@ type
     FSettings: TSvnSettings;
     FSvnProperties: TSvnSettings;
     FSvnItems: TStrings;
+    FSvnExternals: TStrings;
     FSvnExe: string;
     function ExecuteSvn(const Argument: string): string;
     procedure CleanItem(const ItemName: string);
@@ -325,7 +326,7 @@ type
   end;
 
 constructor TSvnCleaner.Create(const XmlFileName: string);
-  procedure ParseSvnItems(RootElem: TJclSimpleXMLElem; Dest: TStrings);
+  procedure ParseSvnItems(RootElem: TJclSimpleXMLElem; Dest, Externals: TStrings);
   var
     TargetIndex, EntryIndex: Integer;
     TargetElem, EntryElem, WcStatusElem: TJclSimpleXMLElem;
@@ -361,6 +362,9 @@ constructor TSvnCleaner.Create(const XmlFileName: string);
         ItemProp := WcStatusElem.Properties.ItemNamed['item'];
         if not Assigned(ItemProp) then
           raise Exception.Create('no item prop');
+        if ItemProp.Value = 'external' then
+          Externals.Add(EntryPath)
+        else
         if ItemProp.Value <> 'unversioned' then
           Dest.Add(EntryPath);
       end;
@@ -382,6 +386,7 @@ begin
   FSettings := TSvnSettings.Create;
   FSvnProperties := TSvnSettings.Create;
   FSvnItems := TStringList.Create;
+  FSvnExternals := TStringList.Create;
 
   Xml := TJclSimpleXML.Create;
   try
@@ -402,16 +407,21 @@ begin
         AStringStream.Seek(0, soBeginning);
         Xml.LoadFromStringStream(AStringStream);
         FSvnProperties.LoadFromXml(Xml.Root);
+      finally
+        AStringStream.Free;
+      end;
 
-        AStringStream.Size := 0;
+      StorageStream.Size := 0;
 
+      AStringStream := TJclAutoStream.Create(StorageStream, False);
+      try
         // retrieve the list of SVN items
         WriteLn('getting SVN items...');
         SvnResult := ExecuteSvn('status -v --xml ' + FSettings.Root);
         AStringStream.WriteString(SvnResult, 1, Length(SvnResult));
         AStringStream.Seek(0, soBeginning);
         Xml.LoadFromStringStream(AStringStream);
-        ParseSvnItems(Xml.Root, FSvnItems);
+        ParseSvnItems(Xml.Root, FSvnItems, FSvnExternals);
       finally
         AStringStream.Free;
       end;
@@ -425,6 +435,7 @@ end;
 
 destructor TSvnCleaner.Destroy;
 begin
+  FSvnExternals.Free;
   FSvnItems.Free;
   FSvnProperties.Free;
   FSettings.Free;
@@ -433,12 +444,20 @@ end;
 
 procedure TSvnCleaner.CleanItem(const ItemName: string);
 var
-  Choice, PropFileName: string;
+  ExternalItem, Choice, PropFileName: string;
   Index, IndexCheck: Integer;
   Properties, NewProperties: TSvnProperties;
   Found: Boolean;
 begin
   WriteLn('processing item "', ItemName, '"');
+
+  // do not process external items
+  for Index := 0 to FSvnExternals.Count - 1 do
+  begin
+    ExternalItem := FSvnExternals.Strings[Index];
+    if Copy(ItemName, 1, Length(ExternalItem)) = ExternalItem then
+      Exit;
+  end;
 
   Properties := FSvnProperties.GetProperties(ItemName);
   NewProperties := FSettings.GetProperties(ItemName);

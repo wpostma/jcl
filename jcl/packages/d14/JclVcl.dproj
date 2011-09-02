@@ -1,4 +1,4 @@
-﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
 			<ProjectGuid>{EB88BAFD-FD11-4F14-A6F6-9036D67B1F8F}</ProjectGuid>
 			<MainSource>JclVcl.dpk</MainSource>
@@ -28,7 +28,7 @@
 			<DllSuffix>140</DllSuffix>
 			<GenDll>true</GenDll>
 			<GenPackage>true</GenPackage>
-			<DCC_ImageBase>$48400000</DCC_ImageBase>
+			<DCC_ImageBase>$48480000</DCC_ImageBase>
 			<DCC_UsePackage>rtl;vcl;vclimg;Jcl</DCC_UsePackage>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_Release)'!=''">
@@ -75,6 +75,7 @@
 			<DCCReference Include="..\..\source\vcl\JclVclResources.pas"/>
 			<DCCReference Include="..\..\source\vcl\JclVersionControl.pas"/>
 			<DCCReference Include="..\..\source\vcl\JclVersionCtrlCVSImpl.pas"/>
+			<DCCReference Include="..\..\source\vcl\JclVersionCtrlGITImpl.pas"/>
 			<DCCReference Include="..\..\source\vcl\JclVersionCtrlSVNImpl.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
@@ -104,9 +105,9 @@
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
 						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
 						<VersionInfo Name="MajorVer">2</VersionInfo>
-						<VersionInfo Name="MinorVer">2</VersionInfo>
+						<VersionInfo Name="MinorVer">3</VersionInfo>
 						<VersionInfo Name="Release">1</VersionInfo>
-						<VersionInfo Name="Build">3970</VersionInfo>
+						<VersionInfo Name="Build">4197</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -118,13 +119,13 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Project JEDI</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">JEDI Code Library VCL package</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.2.1.3970</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.3.1.4197</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">JclVcl</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Copyright (C) 1999, 2011 Project JEDI</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
 						<VersionInfoKeys Name="OriginalFilename">JclVcl140.bpl</VersionInfoKeys>
 						<VersionInfoKeys Name="ProductName">JEDI Code Library</VersionInfoKeys>
-						<VersionInfoKeys Name="ProductVersion">2.2 Build 3970</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductVersion">2.3 Build 4197</VersionInfoKeys>
 					</VersionInfoKeys>
 					<Source>
 						<Source Name="MainSource">JclVcl.dpk</Source>

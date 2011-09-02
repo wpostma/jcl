@@ -41,6 +41,7 @@ unit Snmp;
 interface
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 {$DEFINE SNMP_DYNAMIC_LINK}
 {$DEFINE SNMP_DYNAMIC_LINK_EXPLICIT}
@@ -48,6 +49,7 @@ interface
 
 {$ALIGN ON}
 {$MINENUMSIZE 4}
+
 {$IFNDEF SNMP_DYNAMIC_LINK}
 {$IFDEF SUPPORTS_WEAKPACKAGEUNIT}
   {$WEAKPACKAGEUNIT ON}
@@ -62,7 +64,13 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.Windows, System.SysUtils;
+  {$ELSE ~HAS_UNITSCOPE}
   Windows, SysUtils;
+  {$ENDIF ~HAS_UNITSCOPE}
+
+//DOM-IGNORE-BEGIN
 
 (*$HPPEMIT '#include <snmp.h>'*)
 
@@ -653,6 +661,8 @@ var
   {$EXTERNALSYM SnmpExtensionTrap}
   SnmpExtensionClose: TSnmpExtensionClose;
   {$EXTERNALSYM SnmpExtensionClose}
+
+//DOM-IGNORE-END
 
 function SnmpExtensionLoaded: Boolean;
 function LoadSnmpExtension(const LibName: string): Boolean;

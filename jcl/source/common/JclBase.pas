@@ -46,17 +46,24 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF MSWINDOWS}
+  System.SysUtils;
+  {$ELSE ~HAS_UNITSCOPE}
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF MSWINDOWS}
   SysUtils;
+  {$ENDIF ~HAS_UNITSCOPE}
 
 // Version
 const
   JclVersionMajor   = 2;    // 0=pre-release|beta/1, 2, ...=final
-  JclVersionMinor   = 2;    // Fifth minor release since JCL 1.90
+  JclVersionMinor   = 3;    // Fifth minor release since JCL 1.90
   JclVersionRelease = 1;    // 0: pre-release|beta/ 1: release
-  JclVersionBuild   = 3970; // build number, days since march 1, 2000
+  JclVersionBuild   = 4197; // build number, days since march 1, 2000
   JclVersion = (JclVersionMajor shl 24) or (JclVersionMinor shl 16) or
     (JclVersionRelease shl 15) or (JclVersionBuild shl 0);
 
@@ -90,7 +97,7 @@ type
   SizeInt = Integer;
   {$ENDIF CPU32}
   {$IFDEF CPU64}
-  SizeInt = Int64;
+  SizeInt = NativeInt;
   {$ENDIF CPU64}
   PSizeInt = ^SizeInt;
   PPointer = ^Pointer;
@@ -312,7 +319,12 @@ type
   {$ENDIF FPC}
   {$IFDEF BORLAND}
   TJclAddr64 = Int64;
+  {$IFDEF CPU64}
+  TJclAddr = TJclAddr64;
+  {$ENDIF CPU64}
+  {$IFDEF CPU32}
   TJclAddr = TJclAddr32;
+  {$ENDIF CPU32}
   {$ENDIF BORLAND}
   PJclAddr = ^TJclAddr;
 
@@ -321,7 +333,15 @@ type
 function Addr64ToAddr32(const Value: TJclAddr64): TJclAddr32;
 function Addr32ToAddr64(const Value: TJclAddr32): TJclAddr64;
 
-{$IFDEF SUPPORTS_GENERICS}
+{$IFDEF FPC}
+type
+  HWND = type Windows.HWND;
+  HMODULE = type Windows.HMODULE;
+{$ENDIF FPC}
+
+ {$IFDEF SUPPORTS_GENERICS}
+//DOM-IGNORE-BEGIN
+
 type
   TCompare<T> = function(const Obj1, Obj2: T): Integer;
   TEqualityCompare<T> = function(const Obj1, Obj2: T): Boolean;
@@ -343,6 +363,8 @@ type
     function GetHashCode2(Obj: T): Integer;
     function IEqualityComparer<T>.GetHashCode = GetHashCode2;
   end;
+
+//DOM-IGNORE-END
 {$ENDIF SUPPORTS_GENERICS}
 
 const
@@ -509,6 +531,8 @@ end;
 {$ENDIF OVERFLOWCHECKS_ON}
 
 {$IFDEF SUPPORTS_GENERICS}
+//DOM-IGNORE-BEGIN
+
 //=== { TEquatable<T> } ======================================================
 
 function TEquatable<T>.TestEquals(Other: T): Boolean;
@@ -538,6 +562,7 @@ begin
     Result := Obj.GetHashCode;
 end;
 
+//DOM-IGNORE-END
 {$ENDIF SUPPORTS_GENERICS}
 
 procedure LoadAnsiReplacementCharacter;

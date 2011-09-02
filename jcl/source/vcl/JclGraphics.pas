@@ -40,7 +40,7 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date::                                                                         $ }
+{ Last modified: $Date::                                                                        $ }
 { Revision:      $Rev::                                                                          $ }
 { Author:        $Author::                                                                       $ }
 {                                                                                                  }
@@ -53,13 +53,15 @@ unit JclGraphics;
 interface
 
 uses
-  Windows,
-  Classes, SysUtils,
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.Windows, System.Classes, System.SysUtils, Vcl.Graphics, Vcl.Controls, Vcl.Forms,
+  {$ELSE ~HAS_UNITSCOPE}
+  Windows, Classes, SysUtils, Graphics, Controls, Forms,
+  {$ENDIF ~HAS_UNITSCOPE}
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
-  Graphics, JclGraphUtils, Controls,
-  JclBase;
+  JclGraphUtils, JclBase;
 
 type
   EJclGraphicsError = class(EJclError);
@@ -210,6 +212,7 @@ type
   TJclThreadPersistent = class(TPersistent)
   private
     FLock: TRTLCriticalSection;
+
     FLockCount: Integer;
     FUpdateCount: Integer;
     FOnChanging: TNotifyEvent;
@@ -510,6 +513,11 @@ function CreateRegionFromBitmap(Bitmap: TBitmap; RegionColor: TColor;
   RegionBitmapMode: TJclRegionBitmapMode; UseAlphaChannel: Boolean = False): HRGN;
 procedure ScreenShot(bm: TBitmap; Left, Top, Width, Height: Integer; Window: THandle = HWND_DESKTOP); overload;
 procedure ScreenShot(bm: TBitmap; IncludeTaskBar: Boolean = True); overload;
+procedure ScreenShot(bm: TBitmap; ControlToPrint: TWinControl); overload;
+procedure ScreenShot(bm: TBitmap; ControlToPrint: string); overload;
+procedure ScreenShot(bm: TBitmap; FormToPrint: TCustomForm; ControlToPrint: TWinControl); overload;
+procedure ScreenShot(bm: TBitmap; FormToPrint: TCustomForm); overload;
+procedure ScreenShot(bm: TBitmap; FormToPrint: TCustomForm; ControlToPrint: String); overload;
 function MapWindowRect(hWndFrom, hWndTo: THandle; ARect: TRect):TRect;
 
 // PolyLines and Polygons
@@ -552,6 +560,17 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.Math,
+  Winapi.CommCtrl, Winapi.ShellApi,
+  {$IFDEF HAS_UNIT_GIFIMG}
+  Vcl.Imaging.GifImg,
+  {$ENDIF HAS_UNIT_GIFIMG}
+  {$IFDEF HAS_UNIT_PNGIMAGE}
+  Vcl.Imaging.PngImage,
+  {$ENDIF HAS_UNIT_PNGIMAGE}
+  Vcl.ClipBrd, Vcl.Imaging.JPeg, System.TypInfo,
+  {$ELSE ~HAS_UNITSCOPE}
   Math,
   CommCtrl, ShellApi,
   {$IFDEF HAS_UNIT_GIFIMG}
@@ -561,6 +580,7 @@ uses
   PngImage,
   {$ENDIF HAS_UNIT_PNGIMAGE}
   ClipBrd, JPeg, TypInfo,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclVclResources,
   JclSysUtils,
   JclLogic;
@@ -621,7 +641,7 @@ threadvar
 
 function IntToByte(Value: Integer): Byte;
 begin
-  Result := Math.Max(0, Math.Min(255, Value));
+  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Max(0, {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Min(255, Value));
 end;
 
 procedure CheckBitmaps(Dst, Src: TJclBitmap32);
@@ -945,8 +965,8 @@ begin
       begin
         ContributorList[I].N := 0;
         Center := I / ScaleX;
-        Left := Math.Floor(Center - Width);
-        Right := Math.Ceil(Center + Width);
+        Left := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Floor(Center - Width);
+        Right := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Ceil(Center + Width);
         SetLength(ContributorList[I].Contributors, Right - Left + 1);
         for J := Left to Right do
         begin
@@ -976,8 +996,8 @@ begin
       begin
         ContributorList[I].N := 0;
         Center := I / ScaleX;
-        Left := Math.Floor(Center - Radius);
-        Right := Math.Ceil(Center + Radius);
+        Left := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Floor(Center - Radius);
+        Right := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Ceil(Center + Radius);
         SetLength(ContributorList[I].Contributors, Right - Left + 1);
         for J := Left to Right do
         begin
@@ -1036,8 +1056,8 @@ begin
       begin
         ContributorList[I].N := 0;
         Center := I / ScaleY;
-        Left := Math.Floor(Center - Width);
-        Right := Math.Ceil(Center + Width);
+        Left := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Floor(Center - Width);
+        Right := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Ceil(Center + Width);
         SetLength(ContributorList[I].Contributors, Right - Left + 1);
         for J := Left to Right do
         begin
@@ -1067,8 +1087,8 @@ begin
       begin
         ContributorList[I].N := 0;
         Center := I / ScaleY;
-        Left := Math.Floor(Center - Radius);
-        Right := Math.Ceil(Center + Radius);
+        Left := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Floor(Center - Radius);
+        Right := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Math.Ceil(Center + Radius);
         SetLength(ContributorList[I].Contributors, Right - Left + 1);
         for J := Left to Right do
         begin
@@ -1108,7 +1128,7 @@ begin
         with ContributorList[I] do
         begin
           DestPixel^ := ApplyContributors(N, ContributorList[I].Contributors);
-          Inc(Integer(DestPixel), DestDelta);
+          Inc(INT_PTR(DestPixel), DestDelta);
         end;
       Inc(SourceLine);
       Inc(DestLine);
@@ -2134,6 +2154,76 @@ begin
   ScreenShot(bm, R.Left, R.Top, R.Right, R.Bottom, HWND_DESKTOP);
 end;
 
+procedure ScreenShot(bm: TBitmap; ControlToPrint: TWinControl); overload;
+begin
+  //uses the ActiveForm property of TScreen to determine on which form the control will be searched for.
+  if ControlToPrint <> nil then
+    ScreenShot(bm, Screen.ActiveForm, ControlToPrint)
+  else
+    raise EJclGraphicsError.CreateResFmt(@RSInvalidFormOrComponent, ['form'])
+end;
+
+procedure ScreenShot(bm: TBitmap; ControlToPrint: string); overload;
+begin
+  //uses the ActiveForm property of TScreen to determine on which form the control will be searched for.
+  if Length(ControlToPrint) > 0 then
+    ScreenShot(bm, Screen.ActiveForm, ControlToPrint)
+  else
+    raise EJclGraphicsError.CreateResFmt(@RSInvalidFormOrComponent, ['Component'])
+end;
+
+procedure ScreenShot(bm: TBitmap; FormToPrint: TCustomForm; ControlToPrint: TWinControl); overload;
+begin
+  if FormToPrint <> nil then
+  begin
+    if (ControlToPrint is TWinControl) then
+      ScreenShot(bm, FormToPrint, ControlToPrint.Name)
+    else
+      raise EJclGraphicsError.CreateResFmt(@RSInvalidControlType,[ControlToPrint.Name])
+  end
+  else
+  if ControlToPrint <> nil then
+    raise EJclGraphicsError.CreateResFmt(@RSInvalidFormOrComponent, ['form'])
+  else
+    raise EJclGraphicsError.CreateResFmt(@RSInvalidFormOrComponent, ['form'])
+end;
+
+procedure ScreenShot(bm: TBitmap; FormToPrint: TCustomForm); overload;
+begin
+  //Prints the entire forms area.
+  if FormToPrint <> nil then
+    ScreenShot(bm, FormToPrint.Left, FormToPrint.Top, FormToPrint.Width, FormToPrint.Height, FormToPrint.Handle)
+  else
+    raise EJclGraphicsError.CreateResFmt(@RSInvalidFormOrComponent, ['form'])
+end;
+
+procedure ScreenShot(bm: TBitmap; FormToPrint: TCustomForm; ControlToPrint: String); overload;
+var
+  Component: TComponent;
+begin
+  if FormToPrint <> nil then
+  begin
+    if Length(ControlToPrint) =0 then
+      raise EJclGraphicsError.CreateResFmt(@RSInvalidFormOrComponent, ['component'])
+    else
+    begin
+      Component :=nil;
+      FormToPrint.FindComponent(ControlToPrint);
+      if Component =nil then
+        raise EJclGraphicsError.CreateResFmt(@RsComponentDoesNotExist,[ControlToPrint, FormToPrint.Name])
+      else
+      begin
+        if Component is TWinControl then
+          ScreenShot(bm, TWinControl(Component).Left, TWinControl(Component).Top, TWinControl(Component).Width, TWinControl(Component).Height, TWinControl(Component).Handle)
+        else
+          raise EJclGraphicsError.CreateResFmt(@RSInvalidControlType,[ControlToPrint]);
+      end;
+    end;
+  end
+  else
+    raise EJclGraphicsError.CreateResFmt(@RSInvalidFormOrComponent, ['form'])
+end;
+
 function MapWindowRect(hWndFrom, hWndTo: THandle; ARect:TRect):TRect;
 begin
   MapWindowPoints(hWndFrom, hWndTo, ARect, 2);
@@ -2531,11 +2621,13 @@ constructor TJclThreadPersistent.Create;
 begin
   inherited Create;
   InitializeCriticalSection(FLock);
+
 end;
 
 destructor TJclThreadPersistent.Destroy;
 begin
   DeleteCriticalSection(FLock);
+
   inherited Destroy;
 end;
 
@@ -2566,11 +2658,13 @@ procedure TJclThreadPersistent.Lock;
 begin
   InterlockedIncrement(FLockCount);
   EnterCriticalSection(FLock);
+
 end;
 
 procedure TJclThreadPersistent.Unlock;
 begin
   LeaveCriticalSection(FLock);
+
   InterlockedDecrement(FLockCount);
 end;
 
@@ -4267,7 +4361,7 @@ begin
   begin
     SelectObject(Handle, Font.Handle);
     SetTextColor(Handle, ColorToRGB(Font.Color));
-    SetBkMode(Handle, Windows.TRANSPARENT);
+    SetBkMode(Handle, {$IFDEF HAS_UNITSCOPE}Winapi.{$ENDIF}Windows.TRANSPARENT);
   end;
 end;
 
@@ -4306,7 +4400,7 @@ begin
   UpdateFont;
   Result.cX := 0;
   Result.cY := 0;
-  Windows.GetTextExtentPoint32(Handle, PChar(Text), Length(Text), Result);
+  {$IFDEF HAS_UNITSCOPE}Winapi.{$ENDIF}Windows.GetTextExtentPoint32(Handle, PChar(Text), Length(Text), Result);
 end;
 
 procedure TJclBitmap32.TextOut(X, Y: Integer; const Text: string);

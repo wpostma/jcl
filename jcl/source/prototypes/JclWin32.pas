@@ -48,10 +48,10 @@
 unit JclWin32;
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 {$MINENUMSIZE 4}
 {$ALIGN ON}
-{$WARNINGS OFF}
 
 interface
 
@@ -108,6 +108,8 @@ type
   end;
 {$ENDIF MSWINDOWS}
 
+//DOM-IGNORE-BEGIN
+
 {$I win32api\WinDef.int}
 {$I win32api\WinNT.int}
 {$I win32api\WinBase.int}
@@ -117,6 +119,7 @@ type
 {$I win32api\LmCons.int}
 {$I win32api\LmAccess.int}
 {$I win32api\LmApiBuf.int}
+{$I win32api\Lmwksta.int}
 {$I win32api\Nb30.int}
 {$I win32api\RasDlg.int}
 {$I win32api\Reason.int}
@@ -128,14 +131,16 @@ type
 {$I win32api\WinUser.int}
 {$I win32api\PowrProf.int}
 {$I win32api\DelayImp.int}
-{$I win32api\PropIdl.int}
 {$I win32api\MsiDefs.int}
 {$I win32api\ShlGuid.int}
 {$I win32api\imgguids.int}
 {$I win32api\ObjBase.int}
+{$I win32api\PropIdl.int}
 {$I win32api\NtSecApi.int}
 {$I win32api\TlHelp32.int}
 {$I win32api\Winternl.int}
+
+//DOM-IGNORE-END
 
 {$IFDEF MSWINDOWS}
 
@@ -276,6 +281,7 @@ end;
 {$I win32api\ImageHlp.imp}
 {$I win32api\LmAccess.imp}
 {$I win32api\LmApiBuf.imp}
+{$I win32api\Lmwksta.imp}
 {$I win32api\Nb30.imp}
 {$I win32api\WinBase.imp}
 {$I win32api\WinNLS.imp}
@@ -283,6 +289,7 @@ end;
 {$I win32api\WinNT.imp}
 {$I win32api\PowrProf.imp}
 {$I win32api\ObjBase.imp}
+{$I win32api\PropIdl.imp}
 {$I win32api\NtSecApi.imp}
 {$I win32api\TlHelp32.imp}
 {$I win32api\Winternl.imp}
@@ -294,8 +301,6 @@ initialization
 finalization
   UnregisterUnitVersion(HInstance);
 {$ENDIF UNITVERSIONING}
-
-{$WARNINGS ON}
 
 end.
 

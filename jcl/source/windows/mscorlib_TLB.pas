@@ -1,6 +1,6 @@
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date::                                                                         $ }
+{ Last modified: $Date::                                                                        $ }
 { Revision:      $Rev::                                                                          $ }
 { Author:        $Author::                                                                       $ }
 {                                                                                                  }
@@ -52,11 +52,9 @@ unit mscorlib_TLB;
 //   Hint: Parameter 'Type' of _Assembly.GetManifestResourceStream changed to 'Type_'
 // ************************************************************************ //
 {$TYPEDADDRESS OFF} // Unit must be compiled without type-checked pointers. 
-{ $WARN SYMBOL_PLATFORM OFF}
-{ $WRITEABLECONST ON}
-{ $VARPROPSETTER ON}
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 {$IFDEF SUPPORTS_WEAKPACKAGEUNIT}
   {$IFDEF UNITVERSIONING}
@@ -72,9 +70,13 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
-  ActiveX,
-  Classes;
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.ActiveX, System.Classes;
+  {$ELSE ~HAS_UNITSCOPE}
+  ActiveX, Classes;
+  {$ENDIF ~HAS_UNITSCOPE}
 
+//DOM-IGNORE-BEGIN
 
 // *********************************************************************//
 // GUIDS declared in the TypeLibrary. Following prefixes are used:        
@@ -26627,6 +26629,8 @@ type
     class function CreateRemote(const MachineName: string): _EnumBuilder;
   end;
 
+//DOM-IGNORE-END
+
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
@@ -26641,7 +26645,12 @@ const
 
 implementation
 
-uses ComObj;
+uses 
+  {$IFDEF HAS_UNITSCOPE}
+  System.Win.ComObj;
+  {$ELSE ~HAS_UNITSCOPE}
+  ComObj;
+  {$ENDIF ~HAS_UNITSCOPE}
 
 class function CoAppDomain.Create: _AppDomain;
 begin

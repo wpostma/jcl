@@ -50,6 +50,8 @@ uses
   {$ENDIF UNITVERSIONING}
   JclBase;
 
+//DOM-IGNORE-BEGIN
+
 (*************************************************
 *       Perl-Compatible Regular Expressions      *
 *************************************************)
@@ -579,6 +581,8 @@ var
 
 {$ENDIF PCRE_LINKONREQUEST}
 
+//DOM-IGNORE-END
+
 function IsPCRELoaded: Boolean;
 function LoadPCRE: Boolean;
 procedure UnloadPCRE;
@@ -598,14 +602,20 @@ const
 implementation
 
 uses
-  {$IFDEF MSWINDOWS}
-  Windows,
-  {$ENDIF MSWINDOWS}
-  Types,
   {$IFDEF HAS_UNIT_LIBC}
   Libc,
   {$ENDIF HAS_UNIT_LIBC}
-  SysUtils;
+  {$IFDEF HAS_UNITSCOPE}
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF MSWINDOWS}
+  System.Types, System.SysUtils;
+  {$ELSE ~HAS_UNITSCOPE}
+  {$IFDEF MSWINDOWS}
+  Windows,
+  {$ENDIF MSWINDOWS}
+  Types, SysUtils;
+  {$ENDIF ~HAS_UNITSCOPE}
 
 {$IFDEF PCRE_STATICLINK}
 

@@ -29,11 +29,16 @@
 unit JclDebugXMLDeserializer;
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 interface
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.SysUtils,
+  {$ELSE ~HAS_UNITSCOPE}
   SysUtils,
+  {$ENDIF ~HAS_UNITSCOPE}
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}

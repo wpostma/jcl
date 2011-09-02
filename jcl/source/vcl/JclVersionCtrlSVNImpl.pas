@@ -35,7 +35,11 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
-  SysUtils, Classes, Windows, Graphics,
+  {$IFDEF HAS_UNITSCOPE}
+  System.SysUtils, Winapi.Windows, System.Classes, Vcl.Graphics,
+  {$ELSE ~HAS_UNITSCOPE}
+  SysUtils, Windows, Classes, Graphics,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclVersionControl;
 
 type
@@ -121,6 +125,8 @@ begin
     finally
       RegSetWOW64AccessMode(SaveAcc);
     end;
+    if FTortoiseSVNProc = '' then // when the 64bit Version is not found try to find the 32bit version
+      FTortoiseSVNProc := RegReadStringDef(HKLM, JclVersionCtrlRegKeyName, JclVersionCtrlRegValueName, '');
   end
   else
     FTortoiseSVNProc := RegReadStringDef(HKLM, JclVersionCtrlRegKeyName, JclVersionCtrlRegValueName, '');
@@ -148,9 +154,9 @@ function TJclVersionControlSVN.ExecuteAction(const FileName: TFileName;
     startupInfo.wShowWindow := SW_SHOW;
 
     if FileName = '' then
-      raise Exception.Create(RsEEmptyFileName);
+      raise EJclVersionControlError.Create(RsEEmptyFileName);
     if not Enabled then
-      raise Exception.Create(RsENoTortoiseSVN);
+      raise EJclVersionControlError.Create(RsENoTortoiseSVN);
 
     if FileName[Length(FileName)] = DirDelimiter then
       CurrentDir := FileName
@@ -283,9 +289,9 @@ begin
         finally
           Entries.Free;
         end;
+        Result := Result + [vcaAdd];
       end;
     end;
-    Result := Result + [vcaAdd];
   end;
 end;
 

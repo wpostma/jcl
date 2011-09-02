@@ -44,6 +44,8 @@ uses
   {$ENDIF UNITVERSIONING}
   JclBase; // PByte, PCardinal for Delphi 5 and C++Builder 5...
 
+//DOM-IGNORE-BEGIN
+
 {
 /*-------------------------------------------------------------*/
 /*--- Public header file for the library.                   ---*/
@@ -303,6 +305,8 @@ var
 var
   bz2_internal_error_event: procedure(errcode: Integer) of object = nil;
 
+//DOM-IGNORE-END
+
 function LoadBZip2: Boolean;
 function IsBZip2Loaded: Boolean;
 procedure UnloadBZip2;
@@ -322,6 +326,18 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  {$IFDEF BZIP2_LINKONREQUEST}
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF MSWINDOWS}
+  {$ENDIF BZIP2_LINKONREQUEST}
+  System.Types,
+  {$IFDEF HAS_UNIT_LIBC}
+  Libc,
+  {$ENDIF HAS_UNIT_LIBC}
+  System.SysUtils;
+  {$ELSE ~HAS_UNITSCOPE}
   {$IFDEF BZIP2_LINKONREQUEST}
   {$IFDEF MSWINDOWS}
   Windows,
@@ -332,6 +348,7 @@ uses
   Libc,
   {$ENDIF HAS_UNIT_LIBC}
   SysUtils;
+  {$ENDIF ~HAS_UNITSCOPE}
 
 {$IFDEF BZIP2_STATICLINK}
 function BZ2_bzCompressInit; external;

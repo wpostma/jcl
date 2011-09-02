@@ -34,7 +34,7 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date::                                                                         $ }
+{ Last modified: $Date::                                                                        $ }
 { Revision:      $Rev::                                                                          $ }
 { Author:        $Author::                                                                       $ }
 {                                                                                                  }
@@ -45,15 +45,23 @@ unit JclDebug;
 interface
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF MSWINDOWS}
+  System.Classes, System.SysUtils, System.Contnrs,
+  {$ELSE ~HAS_UNITSCOPE}
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF MSWINDOWS}
   Classes, SysUtils, Contnrs,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase, JclFileUtils, JclPeImage,
   {$IFDEF BORLAND}
   JclTD32,
@@ -177,6 +185,11 @@ type
     property OnLineNumbers: TJclMapLineNumbersEvent read FOnLineNumbers write FOnLineNumbers;
   end;
 
+  TJclMapStringCache = record
+    CachedValue: string;
+    RawValue: PJclMapString;
+  end;
+
   // MAP file scanner
   PJclMapSegmentClass = ^TJclMapSegmentClass;
   TJclMapSegmentClass = record
@@ -185,8 +198,8 @@ type
     Addr: DWORD;   // start as in process memory
     VA: DWORD;     // position relative to module base adress
     Len: DWORD;    // segment length
-    SectionName: PJclMapString;
-    GroupName: PJclMapString;
+    SectionName: TJclMapStringCache;
+    GroupName: TJclMapStringCache;
   end;
 
   PJclMapSegment = ^TJclMapSegment;
@@ -194,14 +207,14 @@ type
     Segment: Word;
     StartVA: DWORD; // VA relative to (module base address + $10000)
     EndVA: DWORD;
-    UnitName: PJclMapString;
+    UnitName: TJclMapStringCache;
   end;
 
   PJclMapProcName = ^TJclMapProcName;
   TJclMapProcName = record
     Segment: Word;
     VA: DWORD; // VA relative to (module base address + $10000)
-    ProcName: PJclMapString;
+    ProcName: TJclMapStringCache;
   end;
 
   PJclMapLineNumber = ^TJclMapLineNumber;
@@ -234,6 +247,11 @@ type
     procedure Scan;
   public
     constructor Create(const MapFileName: TFileName; Module: HMODULE); override;
+
+    class function MapStringCacheToFileName(var MapString: TJclMapStringCache): string;
+    class function MapStringCacheToModuleName(var MapString: TJclMapStringCache): string;
+    class function MapStringCacheToStr(var MapString: TJclMapStringCache; IgnoreSpaces: Boolean = False): string;
+
     // Addr are virtual addresses relative to (module base address + $10000)
     function LineNumberFromAddr(Addr: DWORD): Integer; overload;
     function LineNumberFromAddr(Addr: DWORD; out Offset: Integer): Integer; overload;
@@ -1013,6 +1031,17 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.RTLConsts,
+  {$IFDEF HAS_UNIT_CHARACTER}
+  System.Character,
+  {$ENDIF HAS_UNIT_CHARACTER}
+  {$ELSE ~HAS_UNITSCOPE}
+  RTLConsts,
+  {$IFDEF HAS_UNIT_CHARACTER}
+  Character,
+  {$ENDIF HAS_UNIT_CHARACTER}
+  {$ENDIF ~HAS_UNITSCOPE}
   {$IFDEF MSWINDOWS}
   JclRegistry,
   {$ENDIF MSWINDOWS}
@@ -1664,6 +1693,39 @@ begin
     Result := Addr;
 end;
 
+class function TJclMapScanner.MapStringCacheToFileName(
+  var MapString: TJclMapStringCache): string;
+begin
+  Result := MapString.CachedValue;
+  if Result = '' then
+  begin
+    Result := MapStringToFileName(MapString.RawValue);
+    MapString.CachedValue := Result;
+  end;
+end;
+
+class function TJclMapScanner.MapStringCacheToModuleName(
+  var MapString: TJclMapStringCache): string;
+begin
+  Result := MapString.CachedValue;
+  if Result = '' then
+  begin
+    Result := MapStringToModuleName(MapString.RawValue);
+    MapString.CachedValue := Result;
+  end;
+end;
+
+class function TJclMapScanner.MapStringCacheToStr(var MapString: TJclMapStringCache;
+  IgnoreSpaces: Boolean): string;
+begin
+  Result := MapString.CachedValue;
+  if Result = '' then
+  begin
+    Result := MapStringToStr(MapString.RawValue, IgnoreSpaces);
+    MapString.CachedValue := Result;
+  end;
+end;
+
 procedure TJclMapScanner.ClassTableItem(const Address: TJclMapAddress; Len: Integer;
   SectionName, GroupName: PJclMapString);
 var
@@ -1681,8 +1743,8 @@ begin
   else
     FSegmentClasses[C].VA := MAPAddrToVA(FSegmentClasses[C].Start);
   FSegmentClasses[C].Len := Len;
-  FSegmentClasses[C].SectionName := SectionName;
-  FSegmentClasses[C].GroupName := GroupName;
+  FSegmentClasses[C].SectionName.RawValue := SectionName;
+  FSegmentClasses[C].GroupName.RawValue := GroupName;
 
   if FModule <> 0 then
   begin
@@ -1739,7 +1801,7 @@ begin
     if (FSegmentClasses[SegIndex].Segment = Address.Segment)
       and (DWORD(Address.Offset) < FSegmentClasses[SegIndex].Len) then
   begin
-    if StrLIComp(FSegmentClasses[SegIndex].GroupName, 'TLS', 3) = 0 then
+    if StrLIComp(FSegmentClasses[SegIndex].GroupName.RawValue, 'TLS', 3) = 0 then
       Va := Address.Offset
     else
       VA := MAPAddrToVA(Address.Offset + FSegmentClasses[SegIndex].Start);
@@ -1763,7 +1825,7 @@ begin
       SetLength(FSourceNames, C + 1);
       FSourceNames[C].Segment := FSegmentClasses[SegIndex].Segment;
       FSourceNames[C].VA := VA;
-      FSourceNames[C].ProcName := FNewUnitFileName;
+      FSourceNames[C].ProcName.RawValue := FNewUnitFileName;
       FNewUnitFileName := nil;
     end;
     Break;
@@ -1785,7 +1847,7 @@ begin
   for I := Length(FSegments) - 1 downto 0 do
     if (FSegments[I].StartVA <= Addr) and (Addr < FSegments[I].EndVA) then
     begin
-      Result := MapStringToModuleName(FSegments[I].UnitName);
+      Result := MapStringCacheToModuleName(FSegments[I].UnitName);
       Break;
     end;
 end;
@@ -1826,7 +1888,7 @@ begin
   I := SearchDynArray(FProcNames, SizeOf(FProcNames[0]), Search_MapProcName, @Addr, True);
   if (I <> -1) and (FProcNames[I].VA >= ModuleStartAddr) then
   begin
-    Result := MapStringToStr(FProcNames[I].ProcName, True);
+    Result := MapStringCacheToStr(FProcNames[I].ProcName, True);
     Offset := Addr - FProcNames[I].VA;
   end;
 end;
@@ -1847,11 +1909,11 @@ begin
     if FProcNamesCnt mod 256 = 0 then
       SetLength(FProcNames, FProcNamesCnt + 256);
     FProcNames[FProcNamesCnt].Segment := FSegmentClasses[SegIndex].Segment;
-    if StrLIComp(FSegmentClasses[SegIndex].GroupName, 'TLS', 3) = 0 then
+    if StrLIComp(FSegmentClasses[SegIndex].GroupName.RawValue, 'TLS', 3) = 0 then
       FProcNames[FProcNamesCnt].VA := Address.Offset
     else
       FProcNames[FProcNamesCnt].VA := MAPAddrToVA(Address.Offset + FSegmentClasses[SegIndex].Start);
-    FProcNames[FProcNamesCnt].ProcName := Name;
+    FProcNames[FProcNamesCnt].ProcName.RawValue := Name;
     Inc(FProcNamesCnt);
     Break;
   end;
@@ -1897,7 +1959,7 @@ begin
     if (FSegmentClasses[SegIndex].Segment = Address.Segment)
       and (DWORD(Address.Offset) < FSegmentClasses[SegIndex].Len) then
   begin
-    if StrLIComp(FSegmentClasses[SegIndex].GroupName, 'TLS', 3) = 0 then
+    if StrLIComp(FSegmentClasses[SegIndex].GroupName.RawValue, 'TLS', 3) = 0 then
       VA := Address.Offset
     else
       VA := MAPAddrToVA(Address.Offset + FSegmentClasses[SegIndex].Start);
@@ -1906,7 +1968,7 @@ begin
     FSegments[FSegmentCnt].Segment := FSegmentClasses[SegIndex].Segment;
     FSegments[FSegmentCnt].StartVA := VA;
     FSegments[FSegmentCnt].EndVA := VA + DWORD(Len);
-    FSegments[FSegmentCnt].UnitName := UnitName;
+    FSegments[FSegmentCnt].UnitName.RawValue := UnitName;
     Inc(FSegmentCnt);
     Break;
   end;
@@ -1922,14 +1984,14 @@ begin
   Result := '';
   I := SearchDynArray(FSourceNames, SizeOf(FSourceNames[0]), Search_MapProcName, @Addr, True);
   if (I <> -1) and (FSourceNames[I].VA >= ModuleStartVA) then
-    Result := MapStringToStr(FSourceNames[I].ProcName);
+    Result := MapStringCacheToStr(FSourceNames[I].ProcName);
   if Result = '' then
   begin
     // try with module names (C++Builder compliance)
     for I := Length(FSegments) - 1 downto 0 do
       if (FSegments[I].StartVA <= Addr) and (Addr < FSegments[I].EndVA) then
     begin
-      Result := MapStringToFileName(FSegments[I].UnitName);
+      Result := MapStringCacheToFileName(FSegments[I].UnitName);
       Break;
     end;
   end;
@@ -2179,9 +2241,12 @@ function InsertDebugDataIntoExecutableFile(const ExecutableFileName: TFileName;
   BinDebug: TJclBinDebugGenerator; out LinkerBugUnit: string;
   out MapFileSize, JclDebugDataSize, LineNumberErrors: Integer): Boolean;
 var
-  ImageStream: TMemoryStream;
-  NtHeaders32: PImageNtHeaders32;
-  Sections, LastSection, JclDebugSection: PImageSectionHeader;
+  ImageStream: TStream;
+  NtHeaders32: TImageNtHeaders32;
+  ImageSectionHeaders: TImageSectionHeaderArray;
+  NtHeaders32Position, ImageSectionHeadersPosition, JclDebugSectionPosition: Int64;
+  JclDebugSection: TImageSectionHeader;
+  LastSection: PImageSectionHeader;
   VirtualAlignedSize: DWORD;
   I, X, NeedFill: Integer;
 
@@ -2210,69 +2275,75 @@ begin
   if not Result then
     Exit;
 
-  ImageStream := TMemoryStream.Create;
+  ImageStream := TFileStream.Create(ExecutableFileName, fmOpenReadWrite or fmShareExclusive);
   try
     try
-      ImageStream.LoadFromFile(ExecutableFileName);
-      if PeMapImgTarget(ImageStream.Memory) = taWin32 then
+      if PeMapImgTarget(ImageStream, 0) = taWin32 then
       begin
         MapFileSize := BinDebug.Stream.Size;
         JclDebugDataSize := BinDebug.DataStream.Size;
-        NtHeaders32 := PeMapImgNtHeaders32(ImageStream.Memory);
-        Assert(NtHeaders32 <> nil);
-        Sections := PeMapImgSections32(NtHeaders32);
-        Assert(Sections <> nil);
+        NtHeaders32Position := PeMapImgNtHeaders32(ImageStream, 0, NtHeaders32);
+        Assert(NtHeaders32Position <> -1);
+        ImageSectionHeadersPosition := PeMapImgSections32(ImageStream, NtHeaders32Position, NtHeaders32, ImageSectionHeaders);
+        Assert(ImageSectionHeadersPosition <> -1);
         // Check whether there is not a section with the name already. If so, return True (#0000069)
-        if PeMapImgFindSection32(NtHeaders32, JclDbgDataResName) <> nil then
+        if PeMapImgFindSection(ImageSectionHeaders, JclDbgDataResName) <> -1 then
         begin
           Result := True;
           Exit;
         end;
 
-        LastSection := Sections;
-        Inc(LastSection, NtHeaders32^.FileHeader.NumberOfSections - 1);
-        JclDebugSection := LastSection;
-        Inc(JclDebugSection);
-
+        JclDebugSectionPosition := ImageSectionHeadersPosition + (SizeOf(ImageSectionHeaders[0]) * Length(ImageSectionHeaders));
+        LastSection := @ImageSectionHeaders[High(ImageSectionHeaders)];
+        
         // Increase the number of sections
-        Inc(NtHeaders32^.FileHeader.NumberOfSections);
-        ResetMemory(JclDebugSection^, SizeOf(TImageSectionHeader));
+        Inc(NtHeaders32.FileHeader.NumberOfSections);
+
+        ResetMemory(JclDebugSection, SizeOf(JclDebugSection));
         // JCLDEBUG Virtual Address
-        JclDebugSection^.VirtualAddress := LastSection^.VirtualAddress + LastSection^.Misc.VirtualSize;
-        RoundUpToAlignment(JclDebugSection^.VirtualAddress, NtHeaders32^.OptionalHeader.SectionAlignment);
+        JclDebugSection.VirtualAddress := LastSection^.VirtualAddress + LastSection^.Misc.VirtualSize;
+        RoundUpToAlignment(JclDebugSection.VirtualAddress, NtHeaders32.OptionalHeader.SectionAlignment);
         // JCLDEBUG Physical Offset
-        JclDebugSection^.PointerToRawData := LastSection^.PointerToRawData + LastSection^.SizeOfRawData;
-        RoundUpToAlignment(JclDebugSection^.PointerToRawData, NtHeaders32^.OptionalHeader.FileAlignment);
+        JclDebugSection.PointerToRawData := LastSection^.PointerToRawData + LastSection^.SizeOfRawData;
+        RoundUpToAlignment(JclDebugSection.PointerToRawData, NtHeaders32.OptionalHeader.FileAlignment);
         // JCLDEBUG Section name
-        StrPLCopy(PAnsiChar(@JclDebugSection^.Name), JclDbgDataResName, IMAGE_SIZEOF_SHORT_NAME);
+        StrPLCopy(PAnsiChar(@JclDebugSection.Name), JclDbgDataResName, IMAGE_SIZEOF_SHORT_NAME);
         // JCLDEBUG Characteristics flags
-        JclDebugSection^.Characteristics := IMAGE_SCN_MEM_READ or IMAGE_SCN_CNT_INITIALIZED_DATA;
+        JclDebugSection.Characteristics := IMAGE_SCN_MEM_READ or IMAGE_SCN_CNT_INITIALIZED_DATA;
 
         // Size of virtual data area
-        JclDebugSection^.Misc.VirtualSize := JclDebugDataSize;
+        JclDebugSection.Misc.VirtualSize := JclDebugDataSize;
         VirtualAlignedSize := JclDebugDataSize;
-        RoundUpToAlignment(VirtualAlignedSize, NtHeaders32^.OptionalHeader.SectionAlignment);
+        RoundUpToAlignment(VirtualAlignedSize, NtHeaders32.OptionalHeader.SectionAlignment);
         // Update Size of Image
-        Inc(NtHeaders32^.OptionalHeader.SizeOfImage, VirtualAlignedSize);
+        Inc(NtHeaders32.OptionalHeader.SizeOfImage, VirtualAlignedSize);
         // Raw data size
-        JclDebugSection^.SizeOfRawData := JclDebugDataSize;
-        RoundUpToAlignment(JclDebugSection^.SizeOfRawData, NtHeaders32^.OptionalHeader.FileAlignment);
+        JclDebugSection.SizeOfRawData := JclDebugDataSize;
+        RoundUpToAlignment(JclDebugSection.SizeOfRawData, NtHeaders32.OptionalHeader.FileAlignment);
         // Update Initialized data size
-        Inc(NtHeaders32^.OptionalHeader.SizeOfInitializedData, JclDebugSection^.SizeOfRawData);
+        Inc(NtHeaders32.OptionalHeader.SizeOfInitializedData, JclDebugSection.SizeOfRawData);
+
+        // write NT Headers 32
+        if (ImageStream.Seek(NtHeaders32Position, soBeginning) <> NtHeaders32Position) or
+          (ImageStream.Write(NtHeaders32, SizeOf(NtHeaders32)) <> SizeOf(NtHeaders32)) then
+          raise EJclPeImageError.CreateRes(@SWriteError);
+
+        // write section header
+        if (ImageStream.Seek(JclDebugSectionPosition, soBeginning) <> JclDebugSectionPosition) or
+          (ImageStream.Write(JclDebugSection, SizeOf(JclDebugSection)) <> SizeOf(JclDebugSection)) then
+          raise EJclPeImageError.CreateRes(@SWriteError);
 
         // Fill data to alignment
-        NeedFill := INT_PTR(JclDebugSection^.SizeOfRawData) - JclDebugDataSize;
+        NeedFill := INT_PTR(JclDebugSection.SizeOfRawData) - JclDebugDataSize;
 
         // Note: Delphi linker seems to generate incorrect (unaligned) size of
         // the executable when adding TD32 debug data so the position could be
         // behind the size of the file then.
-        ImageStream.Seek(JclDebugSection^.PointerToRawData, soFromBeginning);
+        ImageStream.Seek({0 +} JclDebugSection.PointerToRawData, soFromBeginning);
         ImageStream.CopyFrom(BinDebug.DataStream, 0);
         X := 0;
         for I := 1 to NeedFill do
           ImageStream.WriteBuffer(X, 1);
-
-        ImageStream.SaveToFile(ExecutableFileName);
       end
       else
         Result := False;
@@ -2399,7 +2470,7 @@ var
         if FSegmentClasses[SegIndex].Segment = SegID then
       begin
         LastSegmentID := FSegmentClasses[SegIndex].Segment;
-        GroupName := MapStringToStr(FSegmentClasses[SegIndex].GroupName);
+        GroupName := MapStringCacheToStr(FSegmentClasses[SegIndex].GroupName);
         LastSegmentStored := (GroupName = 'CODE') or (GroupName = 'ICODE');
         Break;
       end;
@@ -2435,7 +2506,7 @@ begin
       if IsSegmentStored(FSegments[I].Segment) then
     begin
       WriteValueOfs(FSegments[I].StartVA, L1);
-      WriteValueOfs(AddWord(MapStringToModuleName(FSegments[I].UnitName)), L2);
+      WriteValueOfs(AddWord(MapStringCacheToModuleName(FSegments[I].UnitName)), L2);
     end;
     WriteValue(MaxInt);
 
@@ -2446,7 +2517,7 @@ begin
       if IsSegmentStored(FSourceNames[I].Segment) then
     begin
       WriteValueOfs(FSourceNames[I].VA, L1);
-      WriteValueOfs(AddWord(MapStringToStr(FSourceNames[I].ProcName)), L2);
+      WriteValueOfs(AddWord(MapStringCacheToStr(FSourceNames[I].ProcName)), L2);
     end;
     WriteValue(MaxInt);
 
@@ -2459,7 +2530,7 @@ begin
     begin
       WriteValueOfs(FProcNames[I].VA, L1);
       // MAP files generated by C++Builder have spaces in their names
-      S := MapStringToStr(FProcNames[I].ProcName, True);
+      S := MapStringCacheToStr(FProcNames[I].ProcName, True);
       D := Pos('.', S);
       if D = 1 then
       begin
@@ -3874,7 +3945,7 @@ begin
         Result := (SymLoadModuleFunc(ProcessHandle, 0, PAnsiChar(AnsiString(ModuleFileName)), nil, 0, 0) <> 0) and
                   SymGetModuleInfoAFunc(ProcessHandle, Module, ModuleInfoA);
       end;
-      Result := Result and (ModuleInfoW.BaseOfImage <> 0) and
+      Result := Result and (ModuleInfoA.BaseOfImage <> 0) and
                 not (ModuleInfoA.SymType in [SymNone, SymExport]);
     end
     else
@@ -4886,6 +4957,9 @@ begin
         StackInfo.CallerAddr := StackFrameCallerAddr - CallInstructionSize
       else
         StackInfo.CallerAddr := StackFrameCallerAddr;
+      // the stack may be messed up in big projects, avoid overflow in arithmetics
+      if StackFrameCallerFrame < TJclAddr(StackFrame) then
+        Break;
       StackInfo.DumpSize := StackFrameCallerFrame - TJclAddr(StackFrame);
       StackInfo.ParamSize := (StackInfo.DumpSize - SizeOf(TStackFrame)) div 4;
       if PStackFrame(StackFrame^.CallerFrame) = StackFrame then
@@ -5693,12 +5767,12 @@ begin
   FThreadName := AThreadName;
   inherited Create(True);
   JclDebugThreadList.RegisterThread(Self, AThreadName);
-  {$IFDEF RTL210_UP}
-  Suspended := False;
-  {$ELSE ~RTL210_UP}
   if not ASuspended then
+    {$IFDEF RTL210_UP}
+    Suspended := False;
+    {$ELSE ~RTL210_UP}
     Resume;
-  {$ENDIF ~RTL210_UP}
+    {$ENDIF ~RTL210_UP}
 end;
 
 destructor TJclDebugThread.Destroy;

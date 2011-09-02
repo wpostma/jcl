@@ -188,7 +188,7 @@ implementation
 
 uses
   Classes, ActiveX,
-  JclDateTime, JclFileUtils, JclOtaResources, JclTemplates;
+  JclDateTime, JclFileUtils, JclOtaResources, JclPreProcessorTemplates;
 
 //=== { TJclOTARepositoryExpertBase } ========================================
 
@@ -554,7 +554,7 @@ begin
   if FFileName <> '' then
   begin
     try
-      AFileStream := TFileStream.Create(FFileName, fmOpenRead);
+      AFileStream := TFileStream.Create(FFileName, fmOpenRead or fmShareDenyWrite);
       try
         if GetFileTime(AFileStream.Handle, nil, nil, @AFileTime) then
           Result := FileTimeToDateTime(AFileTime)

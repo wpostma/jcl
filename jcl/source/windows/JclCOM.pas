@@ -38,6 +38,7 @@
 unit JclCOM;
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 interface
 
@@ -45,7 +46,11 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.Windows, Winapi.ActiveX, System.Classes,
+  {$ELSE ~HAS_UNITSCOPE}
   Windows, ActiveX, Classes,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase;
 
 // Various definitions
@@ -139,8 +144,11 @@ uses
   {$IFDEF FPC}
   Types,
   {$ENDIF FPC}
-  SysUtils,
-  Variants,
+  {$IFDEF HAS_UNITSCOPE}
+  System.SysUtils, System.Variants,
+  {$ELSE ~HAS_UNITSCOPE}
+  SysUtils, Variants,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclFileUtils, JclRegistry, JclResources, JclSysInfo, JclWin32;
 
 {implementation Constants - may be reused by more than one routine }

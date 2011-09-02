@@ -2,7 +2,6 @@
 {  WARNING:  JEDI preprocessor generated unit.  Do not edit.                                       }
 {**************************************************************************************************}
 
-
 {**************************************************************************************************}
 {                                                                                                  }
 { Project JEDI Code Library (JCL)                                                                  }
@@ -45,15 +44,24 @@
 {                                                                                                  }
 {**************************************************************************************************}
 
+
 unit Hardlinks;
+
+{$I jcl.inc}
+{$I windowsonly.inc}
+
+// ALL enabled by default for Project JEDI
+{$DEFINE STDCALL}   // Make functions STDCALL always
+{$DEFINE RTDL}      // Use runtime dynamic linking
+{$DEFINE PREFERAPI} // Prefer the "real" Windows API on systems on which it exists
+                    // If this is defined STDCALL is automatically needed and defined!
 
 {$ALIGN ON}
 {$MINENUMSIZE 4}
 
 interface
 
-{$I jcl.inc}
-
+//DOM-IGNORE-BEGIN
 
 (*
   All possible combinations of the above DEFINEs have been tested and work fine.
@@ -71,11 +79,15 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.Windows;
+  {$ELSE ~HAS_UNITSCOPE}
   Windows;
-
+  {$ENDIF ~HAS_UNITSCOPE}
 
 {$EXTERNALSYM CreateHardLinkW}
 {$EXTERNALSYM CreateHardLinkA}
+
 
 // Well, we did not decide yet ;) - bind to either address, depending on whether
 // the API could be found.
@@ -89,6 +101,8 @@ var
 var
   hNtDll: THandle = 0; // For runtime dynamic linking
   bRtdlFunctionsLoaded: Boolean = False; // To show wether the RTDL functions had been loaded
+
+//DOM-IGNORE-END
 
 {$IFDEF UNITVERSIONING}
 const
@@ -228,6 +242,7 @@ const
 // =================================================================
 
 
+
 type
   TRtlCreateUnicodeStringFromAsciiz = function(var destination: UNICODE_STRING;
     source: PAnsiChar): Boolean; stdcall;
@@ -362,6 +377,7 @@ var
 
  ******************************************************************************)
 function
+
   MyCreateHardLinkW // ... otherwise this one
   (szLinkName, szLinkTarget: PWideChar; lpSecurityAttributes: PSecurityAttributes): BOOL;
 const
@@ -584,6 +600,7 @@ end;
  ******************************************************************************)
 
 function
+
   MyCreateHardLinkA // ... otherwise this one
   (szLinkName, szLinkTarget: PAnsiChar; lpSecurityAttributes: PSecurityAttributes): BOOL;
 var
@@ -697,6 +714,7 @@ initialization
   {$IFDEF UNITVERSIONING}
   UnregisterUnitVersion(HInstance);
   {$ENDIF UNITVERSIONING}
+
 
 
 end.

@@ -39,15 +39,23 @@ unit JclTD32;
 interface
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF MSWINDOWS}
+  System.Classes, System.SysUtils, System.Contnrs,
+  {$ELSE ~HAS_UNITSCOPE}
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF MSWINDOWS}
   Classes, SysUtils, Contnrs,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase,
   {$IFDEF BORLAND}
   JclPeImage,
@@ -1181,8 +1189,14 @@ begin
       Inc(pszName);
       // Get the name
       FNames.Add(pszName);
-      // skip the length of name and a NULL at the end
-      Inc(pszName, Len + 1);
+      // first, skip the length of name
+      Inc(pszName, Len);
+      // the length is only correct modulo 256 because it is stored on a single byte,
+      // so we have to iterate until we find the real end of the string
+      while PszName^ <> #0 do
+        Inc(pszName, 256);
+      // then, skip a NULL at the end
+      Inc(pszName, 1);
     end;
   end;
 end;

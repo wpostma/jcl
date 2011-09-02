@@ -82,7 +82,7 @@ type
 //  - notifier callback functions
 //  - ... (non exhaustive list)
 
-  EJclExpertException = class (Exception)
+  EJclExpertException = class (EJclError)
   {$IFDEF MSWINDOWS}
   private
     FStackInfo: TJclStackInfoList;
@@ -406,11 +406,14 @@ var
   InsideLineComment, InsideComment, InsideBrace: Boolean;
   procedure LoadNextBuffer;
   begin
+    Line := Line + Copy(Buffer, LineStart - BufferStart + 1, Position - LineStart);
     BufferStart := Position;
+    LineStart := BufferStart;
     BufferCount := AReader.GetText(BufferStart, PAnsiChar(Buffer), BufferSize);
     BufferPosition := Position - BufferStart;
   end;
 begin
+  Line := '';
   BufferStart := 0;
   BufferCount := 0;
   LineStart := 0;
@@ -441,13 +444,14 @@ begin
             InsideLineComment := False;
             if (LineStart - BufferStart) < 0 then
               raise EJclExpertException.CreateRes(@RsELineTooLong);
-            Line := Copy(Buffer, LineStart - BufferStart + 1, Position - LineStart);
+            Line := Line + Copy(Buffer, LineStart - BufferStart + 1, Position - LineStart);
             for PropIndex := 0 to PropCount - 1 do
               if Pos(PropIDs[PropIndex], Line) = 4 then
             begin
               Result[PropIndex] := LineStart + Length(PropIDs[PropIndex]) + 4;
               Inc(PropMatches);
             end;
+            Line := '';
           end;
           LineStart := Position + 1;
         end;
@@ -814,12 +818,15 @@ end;
 
 function TJclOTAExpertBase.GetJCLRootDir: string;
 var
-  IDERegKey, JclVersion, JclDcpDir, JclBplDir: string;
+  IDERegKey, JclVersion, JclDcpDir, JclBplDir, PlatformStr: string;
 begin
   if FJCLRootDir = '' then
   begin
     IDERegKey := StrEnsureNoSuffix('\', GetOTAServices.GetBaseRegistryKey);
-    if not ReadJediRegInformation(IDERegKey, 'JCL', JclVersion, JclDcpDir, JclBplDir, FJCLRootDir)
+    {$IFDEF BDS9_UP}
+    PlatformStr := 'Win32';
+    {$ENDIF BDS9_UP}
+    if not ReadJediRegInformation(IDERegKey, 'JCL', PlatformStr, JclVersion, JclDcpDir, JclBplDir, FJCLRootDir)
        or (FJCLRootDir = '') then
     begin
       if SelectDirectory(LoadResString(@RsBrowseToJCLRootDir), '', FJCLRootDir)
@@ -829,7 +836,7 @@ begin
         JclVersion := Format('%d.%d.%d.%d', [JclVersionMajor, JclVersionMinor, JclVersionRelease, JclVersionBuild]);
         JclDcpDir := JCLSettings.Values['DCP-Path'];
         JclBplDir := JCLSettings.Values['BPL-Path'];
-        InstallJediRegInformation(IDERegKey, 'JCL', JclVersion, JclDcpDir, JclBplDir, FJCLRootDir);
+        InstallJediRegInformation(IDERegKey, 'JCL', PlatformStr, JclVersion, JclDcpDir, JclBplDir, FJCLRootDir);
       end
       else
         raise EJclExpertException.CreateRes(@RsENoRootDir);
@@ -1299,7 +1306,10 @@ begin
     {$IFDEF BDS8_UP}
     // add the config environment variable
     if Supports(Project.ProjectOptions, IOTAProjectOptionsConfigurations, Configurations) then
+    begin
       EnvVariables.Values['Config'] := Configurations.ActiveConfigurationName;
+      EnvVariables.Values['Platform'] := Configurations.ActivePlatformName;
+    end;
     {$ENDIF BDS8_UP}
     while Pos('$(', Result) > 0 do
     begin

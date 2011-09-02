@@ -38,15 +38,23 @@ unit JclCLR;
 interface
 
 {$I jcl.inc}
+{$I windowsonly.inc}
 
 uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF MSWINDOWS}
+  System.Classes, System.SysUtils, System.Contnrs,
+  {$ELSE ~HAS_UNITSCOPE}
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF MSWINDOWS}
   Classes, SysUtils, Contnrs,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase, JclFileUtils, JclStrings, JclPeImage, JclSysUtils;
 
 type
@@ -493,7 +501,11 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.TypInfo,
+  {$ELSE ~HAS_UNITSCOPE}
   TypInfo,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclMetadata, JclResources, JclAnsiStrings, JclStringConversions;
 
 const
