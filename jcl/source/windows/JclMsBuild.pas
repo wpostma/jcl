@@ -23,7 +23,7 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date::                                                                        $ }
+{ Last modified: $Date::                                                                         $ }
 { Revision:      $Rev::                                                                          $ }
 { Author:        $Author::                                                                       $ }
 {                                                                                                  }
@@ -296,6 +296,9 @@ type
     procedure ParseUsingTask(XmlElem: TJclSimpleXmlElem);
     function ParseWhen(XmlElem: TJclSimpleXmlElem; Skip: Boolean): Boolean;
     procedure ParseXml(AXml: TJclSimpleXML);
+  protected
+    function GetPropertyValue(const Name: string): string; virtual;
+    procedure SetPropertyValue(const Name, Value: string); virtual;
   public
     // evaluate known MsBuild properties
     // http://msdn.microsoft.com/en-us/library/ms171458.aspx
@@ -328,6 +331,8 @@ type
     procedure FindItemIncludes(const ItemName: string; List: TStrings);
     function FindItemDefinition(const ItemName: string): TJclMsBuildItem;
     function FindTarget(const TargetName: string): TJclMsBuildTarget;
+
+    class function SameItemName(const ItemName1, ItemName2: string): Boolean;
 
     procedure Init;
     procedure InitEnvironmentProperties;
@@ -904,7 +909,8 @@ begin
 end;
 
 function TJclMsBuildParser.EvaluateString(const S: string): string;
-  procedure FindClosingBrace(const R: string; var Position: Integer);
+
+  function FindClosingBrace(const R: string; var Position: Integer): Boolean;
   var
     Index, Len, BraceCount: Integer;
     Quotes: string;
@@ -956,9 +962,16 @@ function TJclMsBuildParser.EvaluateString(const S: string): string;
       end;
       Inc(Position);
     end;
-    if Position > Len then
-      raise EJclMsBuildError.CreateResFmt(@RsEEndOfString, [S]);
+    Result := Position <= Len;
+
+//    Delphi XE's CodeGear.Delphi.Targets has a bug where the closing paran is missing
+//    "'$(DelphiWin32DebugDCUPath'!=''". But it is still a valid string and not worth
+//    an exception.
+//
+//    if Position > Len then
+//      raise EJclMsBuildError.CreateResFmt(@RsEEndOfString, [S]);
   end;
+
 var
   Start, Position, Index: Integer;
   PropertyName, PropertyValue, Path, Name: string;
@@ -975,7 +988,8 @@ begin
       if Start > 0 then
       begin
         Position := Start;
-        FindClosingBrace(Result, Position);
+        if not FindClosingBrace(Result, Position) then
+          Break;
         PropertyName := Copy(Result, Start + 2, Position - Start - 2);
 
         Prop := True;
@@ -986,7 +1000,7 @@ begin
           Break;
         end;
         if Prop then
-          PropertyValue := Properties.Values[PropertyName]
+          PropertyValue := GetPropertyValue(PropertyName)
         else
         begin
           Reg := Copy(PropertyName, 1, 9) = 'registry:';
@@ -1015,7 +1029,7 @@ begin
         StrReplace(Result,
                    Copy(Result, Start, Position - Start + 1), // $(PropertyName)
                    PropertyValue,
-                   [rfReplaceAll])
+                   [rfReplaceAll, rfIgnoreCase])
       end;
       if Start = 0 then
       begin
@@ -1024,42 +1038,63 @@ begin
         if Start > 0 then
         begin
           Position := Start;
-          FindClosingBrace(Result, Position);
+          if not FindClosingBrace(Result, Position) then
+            raise EJclMsBuildError.CreateResFmt(@RsEEndOfString, [Result]);
           PropertyName := Copy(Result, Start + 2, Position - Start - 2);
 
           PropertyValue := EvaluateList(PropertyName);
-          
+
           StrReplace(Result,
                      Copy(Result, Start, Position - Start + 1), // @(PropertyName...)
                      PropertyValue,
-                     [rfReplaceAll])
+                     [rfReplaceAll, rfIgnoreCase])
         end;
       end;
     until Start = 0;
     // convert hexa to decimal
     if Copy(Result, 1, 2) = '0x' then
-      Result := IntToStr(StrToInt('$' + Copy(Result, 3, Length(Result) - 2)));
+      Result := IntToStr(StrToInt64('$' + Copy(Result, 3, Length(Result) - 2)));
   end;
 end;
 
 function TJclMsBuildParser.EvaluateTransform(ItemList: TStrings; const Transform: string): string;
 type
   TVarRecArray = array of TVarRec;
+const
+  WellKnownItemMetadataCount = 11;
+var
+  UserDefinedMetadataNames: TStrings;
 
   function GetTransformPattern(const Transform: string): string;
+  var
+    Index, EndIndex, Num: Integer;
+    MetaDataName: string;
   begin
     Result := Transform;
-    StrReplace(Result, '%(FullPath)', '%0:s', [rfReplaceAll]);
-    StrReplace(Result, '%(RootDir)', '%1:s', [rfReplaceAll]);
-    StrReplace(Result, '%(Filename)', '%2:s', [rfReplaceAll]);
-    StrReplace(Result, '%(Extension)', '%3:s', [rfReplaceAll]);
-    StrReplace(Result, '%(RelativeDir)', '%4:s', [rfReplaceAll]);
-    StrReplace(Result, '%(Directory)', '%5:s', [rfReplaceAll]);
-    StrReplace(Result, '%(RecursiveDir)', '%6:s', [rfReplaceAll]);
-    StrReplace(Result, '%(Identity)', '%7:s', [rfReplaceAll]);
-    StrReplace(Result, '%(ModifiedTime)', '%8:s', [rfReplaceAll]);
-    StrReplace(Result, '%(CreatedTime)', '%9:s', [rfReplaceAll]);
-    StrReplace(Result, '%(AccessedTime)', '%10:s', [rfReplaceAll]);
+    StrReplace(Result, '%(FullPath)', '%0:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(RootDir)', '%1:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(Filename)', '%2:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(Extension)', '%3:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(RelativeDir)', '%4:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(Directory)', '%5:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(RecursiveDir)', '%6:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(Identity)', '%7:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(ModifiedTime)', '%8:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(CreatedTime)', '%9:s', [rfReplaceAll, rfIgnoreCase]);
+    StrReplace(Result, '%(AccessedTime)', '%10:s', [rfReplaceAll, rfIgnoreCase]);
+
+    // replace user defined metadata
+    Num := WellKnownItemMetadataCount;
+    Index := Pos('%(', Result);
+    while Index <> 0 do
+    begin
+      EndIndex := StrSearch(')', Result, Index + 2);
+      MetaDataName := Copy(Result, Index + 2, EndIndex - Index - 2);
+      UserDefinedMetadataNames.Add(MetaDataName);
+      StrReplace(Result, '%(' + MetaDataName + ')', '%' + IntToStr(Num) + ':s', [rfReplaceAll, rfIgnoreCase]);
+      Inc(Num);
+      Index := StrSearch('%(', Result, Index);
+    end;
   end;
 
   procedure GetTransformParameters(Item: TJclMsBuildItem; var Storage: TDynStringArray;
@@ -1067,13 +1102,13 @@ type
   const
     DateTimeFormat = 'yyyy-mm-dd hh:nn:ss.zzz';
   var
-    Index: Integer;
+    Index, DotIdx: Integer;
     ItemFullInclude: string;
     LocalDateTime: TDateTime;
   begin
-    if Length(Formats) <> 11 then
+    if Length(Formats) <> WellKnownItemMetadataCount + UserDefinedMetadataNames.Count then
     begin
-      SetLength(Formats, 11);
+      SetLength(Formats, WellKnownItemMetadataCount + UserDefinedMetadataNames.Count);
       for Index := Low(Formats) to High(Formats) do
       begin
         {$IFDEF SUPPORTS_UNICODE}
@@ -1086,11 +1121,11 @@ type
       end;
     end;
 
-    if Length(Storage) <> 11 then
-      SetLength(Storage, 11);
+    if Length(Storage) <> WellKnownItemMetadataCount + UserDefinedMetadataNames.Count then
+      SetLength(Storage, WellKnownItemMetadataCount + UserDefinedMetadataNames.Count);
 
     ItemFullInclude := Item.ItemFullInclude;
-    
+
     // %(FullPath) Contains the full path of the item. For example:
     Storage[0] := ItemFullInclude;
 
@@ -1144,6 +1179,17 @@ type
     else
       Storage[10] := '';
 
+    for Index := 0 to UserDefinedMetadataNames.Count - 1 do
+    begin
+      DotIdx := Pos('.', UserDefinedMetadataNames[Index]);
+      if DotIdx <> 0 then // references different item => batch
+      begin
+        Storage[WellKnownItemMetadataCount + Index] := ''; // not implemented yet. Outer loop must iterator over this item
+      end
+      else
+        Storage[WellKnownItemMetadataCount + Index] := Item.ItemMetaData.Values[UserDefinedMetadataNames[Index]];
+    end;
+
     for Index := Low(Formats) to High(Formats) do
       {$IFDEF SUPPORTS_UNICODE}
       Formats[Index].VPWideChar := PChar(Storage[Index]);
@@ -1151,23 +1197,29 @@ type
       Formats[Index].VPChar := PChar(Storage[Index]);
       {$ENDIF ~SUPPORTS_UNICODE}
   end;
+
 var
   Index: Integer;
   TransformPattern, TransformResult: string;
   TransformParameters: TVarRecArray;
   TransformStorage: TDynStringArray;
 begin
-  TransformPattern := GetTransformPattern(Transform);
+  UserDefinedMetadataNames := TStringList.Create;
+  try
+    TransformPattern := GetTransformPattern(Transform);
 
-  Result := '';
-  for Index := 0 to ItemList.Count - 1 do
-  begin
-    GetTransformParameters(TJclMsBuildItem(ItemList.Objects[Index]), TransformStorage, TransformParameters);
-    TransformResult := Format(TransformPattern, TransformParameters);
-    if Result <> '' then
-      Result := Result + ';' + TransformResult
-    else
-      Result := TransformResult;
+    Result := '';
+    for Index := 0 to ItemList.Count - 1 do
+    begin
+      GetTransformParameters(TJclMsBuildItem(ItemList.Objects[Index]), TransformStorage, TransformParameters);
+      TransformResult := Format(TransformPattern, TransformParameters);
+      if Result <> '' then
+        Result := Result + ';' + TransformResult
+      else
+        Result := TransformResult;
+    end;
+  finally
+    UserDefinedMetadataNames.Free;
   end;
 end;
 
@@ -1225,7 +1277,7 @@ begin
   for Index := 0 to FItemDefinitions.Count - 1 do
   begin
     Result := TJclMsBuildItem(FItemDefinitions.Items[Index]);
-    if Result.ItemName = ItemName then
+    if SameItemName(Result.ItemName, ItemName) then
       Exit;
   end;
   Result := nil;
@@ -1242,7 +1294,7 @@ begin
     for Index := 0 to FItems.Count - 1 do
     begin
       Item := TJclMsBuildItem(FItems.Items[Index]);
-      if Item.ItemName = ItemName then
+      if SameItemName(Item.ItemName, ItemName) then
         List.AddObject(Item.ItemInclude, Item);
     end;
   finally
@@ -1261,6 +1313,11 @@ begin
       Exit;
   end;
   Result := nil;
+end;
+
+class function TJclMsBuildParser.SameItemName(const ItemName1, ItemName2: string): Boolean;
+begin
+  Result := SameText(ItemName1, ItemName2);
 end;
 
 function TJclMsBuildParser.GetItem(Index: Integer): TJclMsBuildItem;
@@ -1282,6 +1339,11 @@ end;
 function TJclMsBuildParser.GetItemDefinitionCount: Integer;
 begin
   Result := FItemDefinitions.Count;
+end;
+
+function TJclMsBuildParser.GetPropertyValue(const Name: string): string;
+begin
+  Result := Properties.Values[Name];
 end;
 
 function TJclMsBuildParser.GetTarget(Index: Integer): TJclMsBuildTarget;
@@ -1451,7 +1513,7 @@ var
   Index: Integer;
   Prop: TJclSimpleXmlProp;
   SubElem: TJclSimpleXmlElem;
-  Executed, Otherwise: Boolean;
+  Executed, _Otherwise: Boolean;
 begin
   for Index := 0 to XmlElem.PropertyCount - 1 do
   begin
@@ -1460,7 +1522,7 @@ begin
   end;
 
   Executed := False;
-  Otherwise := False;
+  _Otherwise := False;
   
   for Index := 0 to XmlElem.ItemCount - 1 do
   begin
@@ -1470,9 +1532,9 @@ begin
     else
     if SubElem.Name = 'Otherwise' then
     begin
-      if Otherwise then
+      if _Otherwise then
         raise EJclMsBuildError.CreateRes(@RsEMultipleOtherwise);
-      Otherwise := True;
+      _Otherwise := True;
       Executed := ParseOtherwise(SubElem, Executed);
     end
     else
@@ -1654,13 +1716,13 @@ begin
         opNotEqual:
           Result := LeftString <> RightString;
         opLess:
-          Result := StrToInt(LeftString) < StrToInt(RightString);
+          Result := StrToInt64(LeftString) < StrToInt64(RightString);
         opLessOrEqual:
-          Result := StrToInt(LeftString) <= StrToInt(RightString);
+          Result := StrToInt64(LeftString) <= StrToInt64(RightString);
         opGreater:
-          Result := StrToInt(LeftString) > StrToInt(RightString);
+          Result := StrToInt64(LeftString) > StrToInt64(RightString);
         OpGreaterOrEqual:
-          Result := StrToInt(LeftString) >= StrToInt(RightString);
+          Result := StrToInt64(LeftString) >= StrToInt64(RightString);
       end;
     end
     else
@@ -1945,10 +2007,10 @@ begin
 
   if Condition then
     for Index := 0 to XmlElem.ItemCount - 1 do
-  begin
-    SubElem := XmlElem.Items.Item[Index];
-    ParseItem(SubElem, True);
-  end;
+    begin
+      SubElem := XmlElem.Items.Item[Index];
+      ParseItem(SubElem, True);
+    end;
 end;
 
 procedure TJclMsBuildParser.ParseItemGroup(XmlElem: TJclSimpleXmlElem);
@@ -1971,17 +2033,16 @@ begin
 
   if Condition then
     for Index := 0 to XmlElem.ItemCount - 1 do
-  begin
-    SubElem := XmlElem.Items.Item[Index];
-    ParseItem(SubElem, False);
-  end;
+    begin
+      SubElem := XmlElem.Items.Item[Index];
+      ParseItem(SubElem, False);
+    end;
 end;
 
 procedure TJclMsBuildParser.ParseItemMetaData(XmlElem: TJclSimpleXmlElem; ItemMetaData: TStrings);
 var
   Index: Integer;
   Prop: TJclSimpleXMLProp;
-  SubElem: TJclSimpleXmlElem;
   Condition: Boolean;
 begin
   Condition := True;
@@ -1996,11 +2057,7 @@ begin
   end;
 
   if Condition then
-    for Index := 0 to XmlElem.ItemCount - 1 do
-  begin
-    SubElem := XmlElem.Items.Item[Index];
-    ItemMetaData.Values[SubElem.Name] := EvaluateString(SubElem.Value);
-  end;
+    ItemMetaData.Values[XmlElem.Name] := EvaluateString(XmlElem.Value);
 end;
 
 procedure TJclMsBuildParser.ParseOnError(XmlElem: TJclSimpleXMLElem; Target: TJclMsBuildTarget);
@@ -2307,7 +2364,7 @@ begin
 
   if Condition then
   begin
-    Properties.Values[XmlElem.Name] := EvaluateString(XmlElem.Value);
+    SetPropertyValue(XmlElem.Name, EvaluateString(XmlElem.Value));
     // store the XML element for further modifications in the current file
     if CurrentFileName = ProjectFileName then
     begin
@@ -2393,6 +2450,8 @@ begin
     raise EJclMsBuildError.CreateRes(@RsEMissingTargetName);
 
   Target := TJclMsBuildTarget.Create;
+  FTargets.Add(Target);
+
   Target.FTargetName := TargetName;
   StrToStrings(Depends, ';', Target.FDepends, False);
   StrToStrings(Returns, ';', Target.FReturns, False);
@@ -2401,7 +2460,7 @@ begin
   StrToStrings(BeforeTargets, ';', Target.FBeforeTargets, False);
   StrToStrings(AfterTargets, ';', Target.FAfterTargets, False);
   Target.FKeepDuplicateOutputs := KeepDuplicateOutput;
-  
+
   if Condition then
     for Index := 0 to XmlElem.ItemCount - 1 do
   begin
@@ -2617,6 +2676,11 @@ end;
 procedure TJclMsBuildParser.Save;
 begin
   Xml.SaveToFile(ProjectFileName);
+end;
+
+procedure TJclMsBuildParser.SetPropertyValue(const Name, Value: string);
+begin
+  Properties.Values[Name] := Value;
 end;
 
 procedure TJclMsBuildParser.XMLDecodeValue(Sender: TObject; var Value: string);

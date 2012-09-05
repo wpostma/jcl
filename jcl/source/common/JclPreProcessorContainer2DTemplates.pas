@@ -236,7 +236,7 @@ end;
 
 function TJclContainerMapInfo.GetKeyOwnershipDeclaration: string;
 begin
-  Result := GetKeyAttribute(kaKeyOwnershipParameter);
+  Result := GetKeyAttribute(kaKeyOwnershipParameterName);
   if Result <> '' then
     Result := 'AOwnsKeys: Boolean';
 end;
@@ -292,7 +292,7 @@ end;
 
 function TJclContainerMapInfo.GetValueOwnershipDeclaration: string;
 begin
-  Result := GetValueAttribute(vaValueOwnershipParameter);
+  Result := GetValueAttribute(vaValueOwnershipParameterName);
   if Result <> '' then
     Result := 'AOwnsValues: Boolean';
 end;
@@ -459,11 +459,10 @@ begin
   if Result = '' then
   begin
     if MapInfo.KeyTypeInfo.StringType or MapInfo.ValueTypeInfo.StringType then
-      Result := ' IJclStrContainer,';
+      Result := ' IJclStrBaseContainer,';
     if MapInfo.KeyTypeInfo.TypeAttributes[taContainerInterfaceName] <> '' then
-      Result := Format('%s %s,', [Result, MapInfo.KeyTypeInfo.TypeAttributes[taContainerInterfaceName]])
-    else
-    if MapInfo.ValueTypeInfo.TypeAttributes[taContainerInterfaceName] <> '' then
+      Result := Format('%s %s,', [Result, MapInfo.KeyTypeInfo.TypeAttributes[taContainerInterfaceName]]);
+    if (MapInfo.KeyTypeInfo.TypeName <> MapInfo.ValueTypeInfo.TypeName) and (MapInfo.ValueTypeInfo.TypeAttributes[taContainerInterfaceName] <> '') then
       Result := Format('%s %s,', [Result, MapInfo.ValueTypeInfo.TypeAttributes[taContainerInterfaceName]]);
     if MapInfo.KeyTypeInfo.TObjectType then
       Result := Result + ' IJclKeyOwner,';
@@ -575,7 +574,7 @@ begin
   Result := FCreateKeySet;
   if Result = '' then
   begin
-    if MapInfo.KeyTypeInfo.TypeAttributes[taOwnershipParameter] <> '' then
+    if MapInfo.KeyTypeInfo.TypeAttributes[taOwnershipParameterName] <> '' then
       Ownership := ', False'
     else
       Ownership := '';
@@ -590,7 +589,7 @@ begin
   Result := FCreateValueCollection;
   if Result = '' then
   begin
-    if MapInfo.ValueTypeInfo.TypeAttributes[taOwnershipParameter] <> '' then
+    if MapInfo.ValueTypeInfo.TypeAttributes[taOwnershipParameterName] <> '' then
       Ownership := ', False'
     else
       Ownership := '';
@@ -607,16 +606,16 @@ begin
 
   if (Result = '') and MapInfo.KnownMap then
   begin
-    if GetKeyAttribute(kaKeyOwnershipParameter) <> '' then
+    if GetKeyAttribute(kaKeyOwnershipParameterName) <> '' then
     begin
-      if GetValueAttribute(vaValueOwnershipParameter) <> '' then
+      if GetValueAttribute(vaValueOwnershipParameterName) <> '' then
         Ownership := 'False, False'
       else
         Ownership := 'False';
     end
     else
     begin
-      if GetValueAttribute(vaValueOwnershipParameter) <> '' then
+      if GetValueAttribute(vaValueOwnershipParameterName) <> '' then
         Ownership := 'False'
       else
         Ownership := '';

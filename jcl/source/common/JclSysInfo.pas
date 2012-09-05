@@ -95,6 +95,7 @@ type
 
 function DelEnvironmentVar(const Name: string): Boolean;
 function ExpandEnvironmentVar(var Value: string): Boolean;
+function ExpandEnvironmentVarCustom(var Value: string; Vars: TStrings): Boolean;
 function GetEnvironmentVar(const Name: string; out Value: string): Boolean; overload;
 function GetEnvironmentVar(const Name: string; out Value: string; Expand: Boolean): Boolean; overload;
 function GetEnvironmentVars(const Vars: TStrings): Boolean; overload;
@@ -250,14 +251,15 @@ type
    (wvUnknown, wvWin95, wvWin95OSR2, wvWin98, wvWin98SE, wvWinME,
     wvWinNT31, wvWinNT35, wvWinNT351, wvWinNT4, wvWin2000, wvWinXP,
     wvWin2003, wvWinXP64, wvWin2003R2, wvWinVista, wvWinServer2008,
-    wvWin7, wvWinServer2008R2);
+    wvWin7, wvWinServer2008R2, wvWin8, wvWinServer2012);
   TWindowsEdition =
    (weUnknown, weWinXPHome, weWinXPPro, weWinXPHomeN, weWinXPProN, weWinXPHomeK,
     weWinXPProK, weWinXPHomeKN, weWinXPProKN, weWinXPStarter, weWinXPMediaCenter,
     weWinXPTablet, weWinVistaStarter, weWinVistaHomeBasic, weWinVistaHomeBasicN,
     weWinVistaHomePremium, weWinVistaBusiness, weWinVistaBusinessN,
     weWinVistaEnterprise, weWinVistaUltimate, weWin7Starter, weWin7HomeBasic,
-    weWin7HomePremium, weWin7Professional, weWin7Enterprise, weWin7Ultimate);
+    weWin7HomePremium, weWin7Professional, weWin7Enterprise, weWin7Ultimate,
+    weWin8, weWin8Pro, weWin8Enterprise, weWin8Ultimate, weWin8RT);
   TNtProductType =
    (ptUnknown, ptWorkStation, ptServer, ptAdvancedServer,
     ptPersonal, ptProfessional, ptDatacenterServer, ptEnterprise, ptWebEdition);
@@ -289,6 +291,8 @@ var
   IsWinServer2008: Boolean = False;
   IsWin7: Boolean = False;
   IsWinServer2008R2: Boolean = False;
+  IsWin8: Boolean = False;
+  IsWinServer2012: Boolean = False;
 
 const
   PROCESSOR_ARCHITECTURE_INTEL = 0;
@@ -635,7 +639,7 @@ const
   EINTEL_OSXSAVE   = BIT_27; // OS has enabled features present in EINTEL_XSAVE
   EINTEL_AVX       = BIT_28; // Advanced Vector Extensions
   EINTEL_BIT_29    = BIT_29; // Reserved, do not count on value
-  EINTEL_BIT_30    = BIT_30; // Reserved, do not count on value
+  EINTEL_RDRAND    = BIT_30; // the processor supports the RDRAND instruction.
   EINTEL_BIT_31    = BIT_31; // Always return 0
 
   { Extended Intel 64 Bits Feature Flags }
@@ -1491,6 +1495,102 @@ begin
   end;
 end;
 {$ENDIF MSWINDOWS}
+
+function ExpandEnvironmentVarCustom(var Value: string; Vars: TStrings): Boolean;
+
+  function FindClosingBrace(const R: string; var Position: Integer): Boolean;
+  var
+    Index, Len, BraceCount: Integer;
+    Quotes: string;
+  begin
+    Len := Length(R);
+    BraceCount := 0;
+    Quotes := '';
+    while (Position <= Len) do
+    begin
+      // handle quotes first
+      if (R[Position] = NativeSingleQuote) then
+      begin
+        Index := JclStrings.CharPos(Quotes, NativeSingleQuote);
+        if Index >= 0 then
+          SetLength(Quotes, Index - 1)
+        else
+          Quotes := Quotes + NativeSingleQuote;
+      end;
+
+      if (R[Position] = NativeDoubleQuote) then
+      begin
+        Index := JclStrings.CharPos(Quotes, NativeDoubleQuote);
+        if Index >= 0 then
+          SetLength(Quotes, Index - 1)
+        else
+          Quotes := Quotes + NativeDoubleQuote;
+      end;
+
+      if (R[Position] = '`') then
+      begin
+        Index := JclStrings.CharPos(Quotes, '`');
+        if Index >= 0 then
+          SetLength(Quotes, Index - 1)
+        else
+          Quotes := Quotes + '`';
+      end;
+
+      if Quotes = '' then
+      begin
+        if R[Position] = ')' then
+        begin
+          Dec(BraceCount);
+          if BraceCount = 0 then
+            Break;
+        end
+        else
+        if R[Position] = '(' then
+          Inc(BraceCount);
+      end;
+      Inc(Position);
+    end;
+    Result := Position <= Len;
+
+//    Delphi XE's CodeGear.Delphi.Targets has a bug where the closing paran is missing
+//    "'$(DelphiWin32DebugDCUPath'!=''". But it is still a valid string and not worth
+//    an exception.
+//
+//    if Position > Len then
+//      raise EJclMsBuildError.CreateResFmt(@RsEEndOfString, [S]);
+  end;
+
+var
+  Start, Position: Integer;
+  PropertyName, PropertyValue: string;
+begin
+  Result := True;
+  repeat
+    // start with the last match in order to convert $(some$(other))
+    // evaluate properties
+    Start := StrLastPos('$(', Value);
+    if Start > 0 then
+    begin
+      Position := Start;
+      if not FindClosingBrace(Value, Position) then
+        Break;
+      PropertyName := Copy(Value, Start + 2, Position - Start - 2);
+
+      PropertyValue := Vars.Values[PropertyName];
+
+      if PropertyValue <> '' then
+        StrReplace(Value,
+                   Copy(Value, Start, Position - Start + 1), // $(PropertyName)
+                   PropertyValue,
+                   [rfReplaceAll, rfIgnoreCase])
+      else
+      begin
+        Result := False;
+        Start := 0;
+      end;
+    end;
+  until Start = 0;
+end;
 
 {$IFDEF UNIX}
 
@@ -2903,6 +3003,8 @@ var
   Size: Integer;
 begin
   Size := GetWindowTextLength(Wnd);
+  if Size = 0 then
+    Size := 1;     // always allocate at least one byte, otherwise PChar(Buffer) returns nil
   SetLength(Buffer, Size);
   // strings always have an additional null character
   Size := GetWindowText(Wnd, PChar(Buffer), Size + 1);
@@ -3223,6 +3325,14 @@ begin
                 else
                   Result := wvWinServer2008R2;
               end;
+            2:
+              begin
+                OSVersionInfoEx.dwOSVersionInfoSize := SizeOf(OSVersionInfoEx);
+                if GetVersionEx(OSVersionInfoEx) and (OSVersionInfoEx.wProductType = VER_NT_WORKSTATION) then
+                  Result := wvWin8
+                else
+                  Result := wvWinServer2012;
+              end;
           end;
       end;
   end;
@@ -3321,7 +3431,25 @@ begin
    else
    if (pos('Ultimate', Edition) > 0) then
       Result := weWin7Ultimate;
-  end;
+  end
+  else
+  if (pos('Windows 8', Edition) = 1) then
+  begin
+   // Windows 8 Editions
+   if (pos('Pro', Edition) > 0) then
+      Result := weWin8Pro
+   else
+   if (pos('Enterprise', Edition) > 0) then
+      Result := weWin8Enterprise
+   else
+   if (pos('Ultimate', Edition) > 0) then
+      Result := weWin8Ultimate
+   else
+      Result := weWin8;
+  end
+  else
+  if (pos('Windows RT', Edition) = 1) then
+    Result := weWin8RT;
 end;
 
 function NtProductType: TNtProductType;
@@ -3475,6 +3603,10 @@ begin
       Result := LoadResString(@RsOSVersionWin7);
     wvWinServer2008R2:
       Result := LoadResString(@RsOSVersionWinServer2008R2);
+    wvWin8:
+      Result := LoadResString(@RsOSVersionWin8);
+    wvWinServer2012:
+      Result := LoadResString(@RsOSVersionWinServer2012);
   else
     Result := '';
   end;
@@ -4321,6 +4453,9 @@ function CPUID: TCpuInfo;
       SETNZ   Result
       {$ENDIF CPU32}
       {$IFDEF CPU64}
+      {$IFDEF FPC}
+        {$DEFINE DELPHI64_TEMPORARY}
+      {$ENDIF FPC}
       {$IFDEF DELPHI64_TEMPORARY}
       PUSHFQ
       {$ELSE ~DELPHI64_TEMPORARY}
@@ -4345,6 +4480,9 @@ function CPUID: TCpuInfo;
       AND     RAX, ID_FLAG
       XOR     RAX, RCX
       SETNZ   Result
+      {$IFDEF FPC}
+        {$UNDEF DELPHI64_TEMPORARY}
+      {$ENDIF FPC}
       {$ENDIF CPU64}
     end;
   {$IFNDEF DELPHI64_TEMPORARY}
@@ -5679,6 +5817,10 @@ begin
       IsWin7 := True;
     wvWinServer2008R2:
       IsWinServer2008R2 := True;
+    wvWin8:
+      IsWin8 := True;
+    wvWinServer2012:
+      IsWinServer2012 := True;
   end;
 end;
 

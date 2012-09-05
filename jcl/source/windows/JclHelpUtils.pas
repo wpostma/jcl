@@ -151,11 +151,11 @@ type
 const
   MSHelpSystemKeyName = '\SOFTWARE\Microsoft\Windows\Help';
 
-  HelpContentFileName        = '%s\Help\%s%d.ohc';
-  HelpIndexFileName          = '%s\Help\%s%d.ohi';
-  HelpLinkFileName           = '%s\Help\%s%d.ohl';
-  HelpProjectFileName        = '%s\Help\%s%d.ohp';
-  HelpGidFileName            = '%s\Help\%s%d.gid';
+  HelpContentFileName        = '%s\Help\%s.ohc';
+  HelpIndexFileName          = '%s\Help\%s.ohi';
+  HelpLinkFileName           = '%s\Help\%s.ohl';
+  HelpProjectFileName        = '%s\Help\%s.ohp';
+  HelpGidFileName            = '%s\Help\%s.gid';
 
 //=== { TJclBorlandOpenHelp } ================================================
 
@@ -314,6 +314,9 @@ begin
   FHxPlugin := nil;
   if IDEVersionNumber > 0 then
   begin
+    if (IDEVersionNumber = 10) then
+      FIdeNameSpace := 'embarcadero.rs_xe3'
+    else
     if (IDEVersionNumber = 9) then
       FIdeNameSpace := 'embarcadero.rs_xe2'
     else

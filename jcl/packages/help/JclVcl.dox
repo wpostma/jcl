@@ -51,9 +51,9 @@ File15=..\..\..\help\JclVcl.dtx
 File16=..\..\..\help\Regions.dtx
 
 [General]
-Copyright=Copyright (C) 1999, 2011 Project JEDI
+Copyright=Copyright (C) 1999, 2012 Project JEDI
 Summary=Documentation of the JEDI Code Library VCL package
 Title=JEDI Code Library VCL package
-VersionBuild=4197
+VersionBuild=4571
 VersionMajor=2
-VersionMinor=3
+VersionMinor=4

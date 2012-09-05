@@ -27,7 +27,7 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date::                                                                        $ }
+{ Last modified: $Date::                                                                         $ }
 { Revision:      $Rev::                                                                          $ }
 { Author:        $Author::                                                                       $ }
 {                                                                                                  }
@@ -555,6 +555,7 @@ type
   private
     FCodePage: Word;
     FEncoding: TJclStringEncoding;
+    procedure SetCodePage(Value: Word);
   protected
     function InternalGetNextChar(S: TStream; out Ch: UCS4): Boolean; override;
     function InternalGetNextBuffer(S: TStream; var Buffer: TUCS4Array; Start, Count: SizeInt): Longint; override;
@@ -563,7 +564,7 @@ type
   public
     constructor Create(AStream: TStream; AOwnsStream: Boolean = False); override;
     function SkipBOM: LongInt; override;
-    property CodePage: Word read FCodePage write FCodePage;
+    property CodePage: Word read FCodePage write SetCodePage;
     property Encoding: TJclStringEncoding read FEncoding;
   end;
 
@@ -597,7 +598,13 @@ const
 implementation
 
 uses
-  JclResources, JclCharsets, JclMath, JclSysUtils;
+  {$IFDEF HAS_UNITSCOPE}
+  System.Types,
+  {$ENDIF HAS_UNITSCOPE}
+  JclResources,
+  JclCharsets,
+  JclMath,
+  JclSysUtils;
 
 function StreamCopy(Source: TStream; Dest: TStream; BufferSize: Longint): Int64;
 var
@@ -1544,11 +1551,10 @@ begin
   CurrPos := Position;
   repeat
   until ReadAnsiChar = #0;
-  StrSize := Position - CurrPos - 1;
-  SetLength(Result, StrSize);
-  Position := CurrPos;
-  ReadBuffer(Result[1], StrSize * SizeOf(Result[1]));
-  Position := Position + 1;
+  StrSize := Position - CurrPos;                       // Get number of bytes
+  SetLength(Result, StrSize div SizeOf(AnsiChar) - 1); // Set number of chars without #0
+  Position := CurrPos;                                 // Seek to start read
+  ReadBuffer(Result[1], StrSize);                      // Read ansi data and #0
 end;
 
 function TJclEasyStream.ReadCWideString: WideString;
@@ -1559,11 +1565,10 @@ begin
   CurrPos := Position;
   repeat
   until ReadWideChar = #0;
-  StrSize := Position - CurrPos - 1;
-  SetLength(Result, StrSize);
-  Position := CurrPos;
-  ReadBuffer(Result[1], StrSize * SizeOf(Result[1]));
-  Position := Position + 1;
+  StrSize := Position - CurrPos;                       // Get number of bytes
+  SetLength(Result, StrSize div SizeOf(WideChar) - 1); // Set number of chars without #0
+  Position := CurrPos;                                 // Seek to start read
+  ReadBuffer(Result[1], StrSize);                      // Read wide data and #0
 end;
 
 function TJclEasyStream.ReadShortString: string;
@@ -3084,6 +3089,21 @@ begin
   else
     Result := AnsiSetNextCharToStream(S, CodePage, Ch);
   end;
+end;
+
+procedure TJclAutoStream.SetCodePage(Value: Word);
+begin
+  if Value = CP_UTF8 then
+    FEncoding := seUTF8
+  else
+  if Value = CP_UTF16LE then
+    FEncoding := seUTF16
+  else
+  if Value = CP_ACP then
+    FEncoding := seAnsi
+  else
+    FEncoding := seAuto;
+  FCodePage := Value;
 end;
 
 function TJclAutoStream.SkipBOM: LongInt;

@@ -81,11 +81,20 @@
 //   static link: PCRE_STATICLINK
 //   static dll import: PCRE_LINKDLL
 //   dynamic dll import: PCRE_LINKONREQUEST
+//   RTL's RegularExpressionsAPI: PCRE_RTL
 
 {.$DEFINE PCRE_STATICLINK}
 {.$DEFINE PCRE_LINKDLL}
 {.$DEFINE PCRE_LINKONREQUEST} // default
+{.$DEFINE PCRE_RTL} // DXE and newer
 
+// ANSI/UTF8 PCRE
+{$DEFINE PCRE_8}
+// UCS2/UTF16 enabled PCRE
+{$DEFINE PCRE_16} // only valid when PCRE_STATICLINK is enabled, the RTL does not support it and the DLL found over the internet are completly outdated.
+
+// use PCRE16 when available rather than good old PCRE8
+{$DEFINE PCRE_PREFER_16}
 
 // BZIP2 options, mutually exclusive
 
@@ -99,6 +108,7 @@
 {.$DEFINE ZLIB_STATICLINK} // default
 {.$DEFINE ZLIB_LINKDLL}
 {.$DEFINE ZLIB_LINKONREQUEST}
+{.$DEFINE ZLIB_RTL} // DXE2 and newer only
 
 
 // Unicode options

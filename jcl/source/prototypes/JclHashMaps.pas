@@ -38,23 +38,25 @@ unit JclHashMaps;
 interface
 
 uses
-  Classes,
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  System.Classes,
+  {$ELSE ~HAS_UNITSCOPE}
+  Classes,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclAlgorithms,
   JclBase, JclSynch,
   JclContainerIntf, JclAbstractContainers, JclArrayLists, JclArraySets;
 {$I containers\JclContainerCommon.imp}
 {$I containers\JclHashMaps.imp}
 {$I containers\JclHashMaps.int}
+{$I containers\JclAlgorithms.int}
+{$I containers\JclAlgorithms.imp}
 type
-  // Hash Function
-  // Result must be in 0..Range-1
-  TJclHashFunction = function(Key, Range: Integer): Integer;
-
 (*$JPPLOOP ALLMAPINDEX ALLMAPCOUNT
-  {$JPPEXPANDMACRO JCLHASHMAPTYPESINT(,,,)}
+  {$JPPEXPANDMACRO JCLHASHMAPTYPESINT(,,,,)}
 
   {$JPPEXPANDMACRO JCLHASHMAPINT(,,,,,,,,,,,,,)}
 
@@ -62,10 +64,22 @@ type
   {$IFDEF SUPPORTS_GENERICS}
   //DOM-IGNORE-BEGIN
 
-  (*$JPPEXPANDMACRO JCLHASHMAPTYPESINT(TJclHashEntry<TKey\,TValue>,TJclBucket<TKey\,TValue>,TKey,TValue)*)
+  TJclHashEntry<TKey,TValue> = record
+    Key: TKey;
+    Value: TValue;
+  end;
+
+  TJclBucket<TKey,TValue> = class
+  public
+    type
+      THashEntryArray = array of TJclHashEntry<TKey,TValue>;
+  public
+    Size: Integer;
+    Entries: THashEntryArray;
+    {$JPPUNDEF GENERIC}{$JPPDEFINE REFCOUNTED}{$JPPEXPANDMACRO MOVEARRAYINT(MoveArray,THashEntryArray,)}
+  end;
 
   (*$JPPEXPANDMACRO JCLHASHMAPINT(TBucket,TJclHashMap<TKey\,TValue>,TJclAbstractContainerBase,IJclMap<TKey\,TValue>,IJclSet<TKey>,IJclCollection<TValue>, IJclPairOwner<TKey\, TValue>\,,
-
 protected
   type
     TBucket = TJclBucket<TKey\,TValue>;
@@ -173,8 +187,6 @@ public
   //DOM-IGNORE-END
   {$ENDIF SUPPORTS_GENERICS}
 
-function HashMul(Key, Range: Integer): Integer;
-
 {$IFDEF UNITVERSIONING}
 const
   UnitVersioning: TUnitVersionInfo = (
@@ -190,19 +202,15 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.SysUtils,
+  {$ELSE ~HAS_UNITSCOPE}
   SysUtils,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclResources;
 
-function HashMul(Key, Range: Integer): Integer;
-// return a value between 0 and (Range-1) based on integer-hash Key
-const
-  A = 0.6180339887; // (sqrt(5) - 1) / 2
-begin
-  Result := Trunc(Range * (Frac(Abs(Key * A))));
-end;
-
 (*$JPPLOOP TRUEMAPINDEX TRUEMAPCOUNT
-{$JPPEXPANDMACRO JCLHASHMAPTYPESIMP(,,)}
+{$JPPEXPANDMACRO JCLHASHMAPTYPESIMP(,,,)}
 
 {$JPPEXPANDMACRO JCLHASHMAPIMP(,,,,,,,,,,,,,,,,)}
 
@@ -210,7 +218,9 @@ end;
 {$IFDEF SUPPORTS_GENERICS}
 //DOM-IGNORE-BEGIN
 
-{$JPPEXPANDMACRO JCLHASHMAPTYPESIMP(TJclBucket<TKey\, TValue>,Default(TKey),Default(TValue))}
+//=== { TJclBucket<TKey, TValue> } ==========================================
+
+{$JPPUNDEF GENERIC}{$JPPDEFINE REFCOUNTED}{$JPPEXPANDMACRO MOVEARRAYIMP(MoveArray,THashEntryArray,,TJclBucket<TKey\, TValue>.,)}
 
 {$JPPEXPANDMACRO JCLHASHMAPIMP(TJclHashMap<TKey\, TValue>,TBucket,IJclMap<TKey\, TValue>,IJclSet<TKey>,IJclIterator<TKey>,IJclCollection<TValue>,; AOwnsKeys: Boolean,; AOwnsValues: Boolean,
 

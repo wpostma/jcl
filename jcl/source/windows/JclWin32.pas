@@ -71,8 +71,9 @@ uses
   {$ELSE ~HAS_UNITSCOPE}
   Windows, SysUtils,
   {$IFNDEF FPC}
-  AccCtrl, ActiveX,
+  AccCtrl,
   {$ENDIF ~FPC}
+  ActiveX,
   {$ENDIF ~HAS_UNITSCOPE}
   JclBase;
 
@@ -861,6 +862,10 @@ type
   TTokenUser = TOKEN_USER;
   PTokenUser = PTOKEN_USER;
 {$ENDIF ~FPC}
+
+function CaptureStackBackTrace(FramesToSkip, FramesToCapture: DWORD;
+  BackTrace: Pointer; out BackTraceHash: DWORD): Word; stdcall;
+{$EXTERNALSYM CaptureStackBackTrace}
 
 // line 3858
 
@@ -3150,6 +3155,22 @@ type
   TLoadedImage = LOADED_IMAGE;
   PLoadedImage = PLOADED_IMAGE;
 
+  PIMAGE_SYMBOL = ^IMAGE_SYMBOL;
+  {$EXTERNALSYM PIMAGE_SYMBOL}
+  _IMAGE_SYMBOL = packed record  // MUST pack to obtain the right size
+    Name: array [0..7] of AnsiChar;
+    Value: ULONG;
+    SectionNumber: USHORT;
+    _Type: USHORT;
+    StorageClass: BYTE;
+    NumberOfAuxSymbols: BYTE;
+  end;
+  {$EXTERNALSYM _IMAGE_SYMBOL}
+  IMAGE_SYMBOL = _IMAGE_SYMBOL;
+  {$EXTERNALSYM IMAGE_SYMBOL}
+  TImageSymbol = IMAGE_SYMBOL;
+  PImageSymbol = PIMAGE_SYMBOL;
+
 // line 152
 
 
@@ -3283,6 +3304,23 @@ type
   TImagehlpSymbolA = _IMAGEHLP_SYMBOLA;
 
   { symbol data structure }
+  {$EXTERNALSYM PImagehlpSymbolA64}
+  PImagehlpSymbolA64 = ^TImagehlpSymbolA64;
+  {$EXTERNALSYM _IMAGEHLP_SYMBOLA64}
+  _IMAGEHLP_SYMBOLA64 = packed record
+    SizeOfStruct: DWORD;                                { set to sizeof(IMAGEHLP_SYMBOL) }
+    Address: TJclAddr64;                                { virtual address including dll base address }
+    Size: DWORD;                                        { estimated size of symbol, can be zero }
+    Flags: DWORD;                                       { info about the symbols, see the SYMF defines }
+    MaxNameLength: DWORD;                               { maximum size of symbol name in 'Name' }
+    Name: packed array[0..0] of AnsiChar;               { symbol name (null terminated string) }
+  end;
+  {$EXTERNALSYM IMAGEHLP_SYMBOLA64}
+  IMAGEHLP_SYMBOLA64 = _IMAGEHLP_SYMBOLA64;
+  {$EXTERNALSYM TImagehlpSymbolA64}
+  TImagehlpSymbolA64 = _IMAGEHLP_SYMBOLA64;
+
+  { symbol data structure }
   {$EXTERNALSYM PImagehlpSymbolW}
   PImagehlpSymbolW = ^TImagehlpSymbolW;
   {$EXTERNALSYM _IMAGEHLP_SYMBOLW}
@@ -3298,6 +3336,23 @@ type
   IMAGEHLP_SYMBOLW = _IMAGEHLP_SYMBOLW;
   {$EXTERNALSYM TImagehlpSymbolW}
   TImagehlpSymbolW = _IMAGEHLP_SYMBOLW;
+
+  { symbol data structure }
+  {$EXTERNALSYM PImagehlpSymbolW64}
+  PImagehlpSymbolW64 = ^TImagehlpSymbolW64;
+  {$EXTERNALSYM _IMAGEHLP_SYMBOLW64}
+  _IMAGEHLP_SYMBOLW64 = packed record
+    SizeOfStruct: DWORD;                                { set to sizeof(IMAGEHLP_SYMBOL) }
+    Address: TJclAddr64;                                { virtual address including dll base address }
+    Size: DWORD;                                        { estimated size of symbol, can be zero }
+    Flags: DWORD;                                       { info about the symbols, see the SYMF defines }
+    MaxNameLength: DWORD;                               { maximum size of symbol name in 'Name' }
+    Name: packed array[0..0] of WideChar;               { symbol name (null terminated string) }
+  end;
+  {$EXTERNALSYM IMAGEHLP_SYMBOLW64}
+  IMAGEHLP_SYMBOLW64 = _IMAGEHLP_SYMBOLW64;
+  {$EXTERNALSYM TImagehlpSymbolW64}
+  TImagehlpSymbolW64 = _IMAGEHLP_SYMBOLW64;
 
   { module data structure }
   {$EXTERNALSYM PImagehlpModuleA}
@@ -3321,6 +3376,27 @@ type
   TImagehlpModuleA = _IMAGEHLP_MODULEA;
 
   { module data structure }
+  {$EXTERNALSYM PImagehlpModuleA64}
+  PImagehlpModuleA64 = ^TImagehlpModuleA64;
+  {$EXTERNALSYM _IMAGEHLP_MODULEA64}
+  _IMAGEHLP_MODULEA64 = record
+    SizeOfStruct: DWORD;                                { set to sizeof(IMAGEHLP_MODULE) }
+    BaseOfImage: TJclAddr64;                            { base load address of module }
+    ImageSize: DWORD;                                   { virtual size of the loaded module }
+    TimeDateStamp: DWORD;                               { date/time stamp from pe header }
+    CheckSum: DWORD;                                    { checksum from the pe header }
+    NumSyms: DWORD;                                     { number of symbols in the symbol table }
+    SymType: TSymType;                                  { type of symbols loaded }
+    ModuleName: packed array[0..31] of AnsiChar;        { module name }
+    ImageName: packed array[0..255] of AnsiChar;        { image name }
+    LoadedImageName: packed array[0..255] of AnsiChar;  { symbol file name }
+  end;
+  {$EXTERNALSYM IMAGEHLP_MODULEA64}
+  IMAGEHLP_MODULEA64 = _IMAGEHLP_MODULEA64;
+  {$EXTERNALSYM TImagehlpModuleA64}
+  TImagehlpModuleA64 = _IMAGEHLP_MODULEA64;
+
+  { module data structure }
   {$EXTERNALSYM PImagehlpModuleW}
   PImagehlpModuleW = ^TImagehlpModuleW;
   {$EXTERNALSYM _IMAGEHLP_MODULEW}
@@ -3341,6 +3417,27 @@ type
   {$EXTERNALSYM TImagehlpModuleW}
   TImagehlpModuleW = _IMAGEHLP_MODULEW;
 
+  { module data structure }
+  {$EXTERNALSYM PImagehlpModuleW64}
+  PImagehlpModuleW64 = ^TImagehlpModuleW64;
+  {$EXTERNALSYM _IMAGEHLP_MODULEW64}
+  _IMAGEHLP_MODULEW64 = record
+    SizeOfStruct: DWORD;                                { set to sizeof(IMAGEHLP_MODULE) }
+    BaseOfImage: TJclAddr64;                            { base load address of module }
+    ImageSize: DWORD;                                   { virtual size of the loaded module }
+    TimeDateStamp: DWORD;                               { date/time stamp from pe header }
+    CheckSum: DWORD;                                    { checksum from the pe header }
+    NumSyms: DWORD;                                     { number of symbols in the symbol table }
+    SymType: TSymType;                                  { type of symbols loaded }
+    ModuleName: packed array[0..31] of WideChar;        { module name }
+    ImageName: packed array[0..255] of WideChar;        { image name }
+    LoadedImageName: packed array[0..255] of WideChar;  { symbol file name }
+  end;
+  {$EXTERNALSYM IMAGEHLP_MODULEW64}
+  IMAGEHLP_MODULEW64 = _IMAGEHLP_MODULEW64;
+  {$EXTERNALSYM TImagehlpModuleW64}
+  TImagehlpModuleW64 = _IMAGEHLP_MODULEW64;
+
   _IMAGEHLP_LINEA = packed record
     SizeOfStruct: DWORD;           // set to sizeof(IMAGEHLP_LINE)
     Key: Pointer;                  // internal
@@ -3353,6 +3450,18 @@ type
   TImageHlpLineA = _IMAGEHLP_LINEA;
   PImageHlpLineA = PIMAGEHLP_LINEA;
 
+  _IMAGEHLP_LINEA64 = packed record
+    SizeOfStruct: DWORD;           // set to sizeof(IMAGEHLP_LINE)
+    Key: Pointer;                  // internal
+    LineNumber: DWORD;             // line number in file
+    FileName: PAnsiChar;           // full filename
+    Address: TJclAddr64;           // first instruction of line
+  end;
+  IMAGEHLP_LINEA64 = _IMAGEHLP_LINEA64;
+  PIMAGEHLP_LINEA64 = ^_IMAGEHLP_LINEA64;
+  TImageHlpLineA64 = _IMAGEHLP_LINEA64;
+  PImageHlpLineA64 = PIMAGEHLP_LINEA64;
+
   _IMAGEHLP_LINEW = packed record
     SizeOfStruct: DWORD;           // set to sizeof(IMAGEHLP_LINE)
     Key: Pointer;                  // internal
@@ -3364,6 +3473,18 @@ type
   PIMAGEHLP_LINEW = ^_IMAGEHLP_LINEW;
   TImageHlpLineW = _IMAGEHLP_LINEW;
   PImageHlpLineW = PIMAGEHLP_LINEW;
+
+  _IMAGEHLP_LINEW64 = packed record
+    SizeOfStruct: DWORD;           // set to sizeof(IMAGEHLP_LINE)
+    Key: Pointer;                  // internal
+    LineNumber: DWORD;             // line number in file
+    FileName: PWideChar;           // full filename
+    Address: TJclAddr64;           // first instruction of line
+  end;
+  IMAGEHLP_LINEW64 = _IMAGEHLP_LINEW64;
+  PIMAGEHLP_LINEW64 = ^_IMAGEHLP_LINEW64;
+  TImageHlpLineW64 = _IMAGEHLP_LINEW64;
+  PImageHlpLineW64 = PIMAGEHLP_LINEW64;
 
 // line 1475
 
@@ -3416,6 +3537,13 @@ const
 
   SYMOPT_DEBUG                  = $80000000;
   {$EXTERNALSYM SYMOPT_DEBUG}
+
+// IoAPI.h
+
+
+function CancelIo(hFile: THandle): BOOL; stdcall;
+{$EXTERNALSYM CancelIo}
+
 
 const
   NERR_Success = 0; // Success
@@ -7877,6 +8005,18 @@ end;
 
 
 type
+  TCancelIo = function (hFile: THandle): BOOL; stdcall;
+var
+  _CancelIo: TCancelIo = nil;
+
+function CancelIo(hFile: THandle): BOOL;
+begin
+  GetProcedureAddress(Pointer(@_CancelIo), kernel32, 'CancelIo');
+  Result := _CancelIo(hFile);
+end;
+
+
+type
   TNetUserAdd = function (servername: LPCWSTR; level: DWORD; buf: PByte; parm_err: LPDWORD): NET_API_STATUS; stdcall;
 var
   _NetUserAdd: TNetUserAdd = nil;
@@ -8710,6 +8850,20 @@ end;
 function SORTVERSIONFROMLCID(LocaleId: LCID): WORD;
 begin
   Result := WORD((DWORD(LocaleId) shr 20) and $000F);
+end;
+
+type
+  TCaptureStackBackTrace = function(FramesToSkip, FramesToCapture: DWORD;
+    BackTrace: Pointer; out BackTraceHash: DWORD): Word; stdcall;
+
+var
+  _CaptureStackBackTrace: TCaptureStackBackTrace = nil;
+
+function CaptureStackBackTrace(FramesToSkip, FramesToCapture: DWORD;
+  BackTrace: Pointer; out BackTraceHash: DWORD): Word; stdcall;
+begin
+  GetProcedureAddress(Pointer(@_CaptureStackBackTrace), kernel32, 'RtlCaptureStackBackTrace');
+  Result := _CaptureStackBackTrace(FramesToSkip, FramesToCapture, BackTrace, BackTraceHash);
 end;
 
 // line 9149

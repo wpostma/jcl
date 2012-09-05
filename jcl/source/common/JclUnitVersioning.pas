@@ -168,6 +168,7 @@ implementation
 uses
   // make TObjectList functions inlined
   {$IFDEF HAS_UNITSCOPE}
+  System.Types, // inlining of TObjectList.Remove
   System.Classes,
   {$ELSE ~HAS_UNITSCOPE}
   Classes,
@@ -683,18 +684,11 @@ begin
   UnitVersioningFinalized := True;
   try
     if UnitVersioningNPA <> nil then
-    begin
-      UnitVersioningMutex.WaitFor(INFINITE);
-      try
-        UnitVersioningNPA^ := nil;
-        SharedCloseMem(UnitVersioningNPA);
-      finally
-        UnitVersioningMutex.Release;
-      end;
-    end;
+      SharedCloseMem(UnitVersioningNPA);
     if (GlobalUnitVersioning <> nil) and UnitVersioningOwner then
-      GlobalUnitVersioning.Free;
-    GlobalUnitVersioning := nil;
+      FreeAndNil(GlobalUnitVersioning)
+    else
+      GlobalUnitVersioning := nil;
   except
     // ignore - should never happen
   end;

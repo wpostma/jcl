@@ -1421,7 +1421,7 @@ begin
     WriteTextLine;
 
     // 2) category data
-    WriteTextLine('CATEGORIES UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
+    WriteTextLine('LANGUAGE 0,0 CATEGORIES UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
     WriteTextLine('{');
     CreateResource;
     // write out only used categories
@@ -1450,30 +1450,29 @@ begin
     WriteTextLine;
 
     // 3) case mapping data
-    WriteTextLine('CASE UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
+    WriteTextLine('LANGUAGE 0,0 CASE UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
     WriteTextLine('{');
     CreateResource;
     // record how many case mapping entries we have
     WriteResourceCardinal(Length(CaseMapping));
     for I := 0 to High(CaseMapping) do
-      with CaseMapping[I] do
-      begin
-        // store every available case mapping, consider one-to-many mappings
-        // a) write actual code point
-        WriteResourceChar(Code);
-        // b) write lower case
-        WriteResourceByte(Length(Fold));
-        WriteResourceCharArray(Fold);
-        // c) write lower case
-        WriteResourceByte(Length(Lower));
-        WriteResourceCharArray(Lower);
-        // d) write title case
-        WriteResourceByte(Length(Title));
-        WriteResourceCharArray(Title);
-        // e) write upper case
-        WriteResourceByte(Length(Upper));
-        WriteResourceCharArray(Upper);
-      end;
+    begin
+      // store every available case mapping, consider one-to-many mappings
+      // a) write actual code point
+      WriteResourceChar(CaseMapping[I].Code);
+      // b) write lower case
+      WriteResourceByte(Length(CaseMapping[I].Fold));
+      WriteResourceCharArray(CaseMapping[I].Fold);
+      // c) write lower case
+      WriteResourceByte(Length(CaseMapping[I].Lower));
+      WriteResourceCharArray(CaseMapping[I].Lower);
+      // d) write title case
+      WriteResourceByte(Length(CaseMapping[I].Title));
+      WriteResourceCharArray(CaseMapping[I].Title);
+      // e) write upper case
+      WriteResourceByte(Length(CaseMapping[I].Upper));
+      WriteResourceCharArray(CaseMapping[I].Upper);
+    end;
     FlushResource;
     WriteTextLine('}');
     WriteTextLine;
@@ -1482,26 +1481,25 @@ begin
     // 4) decomposition data
     // fully expand all decompositions before generating the output
     ExpandDecompositions;
-    WriteTextLine('DECOMPOSITION UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
+    WriteTextLine('LANGUAGE 0,0 DECOMPOSITION UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
     WriteTextLine('{');
     CreateResource;
     // record how many decomposition entries we have
     WriteResourceCardinal(Length(Decompositions));
     for I := 0 to High(Decompositions) do
-      with Decompositions[I] do
-      begin
-        WriteResourceChar(Code);
-        WriteResourceByte(Length(Decompositions));
-        WriteResourceByte(Byte(Tag));
-        WriteResourceCharArray(Decompositions);
-      end;
+    begin
+      WriteResourceChar(Decompositions[I].Code);
+      WriteResourceByte(Length(Decompositions[I].Decompositions));
+      WriteResourceByte(Byte(Decompositions[I].Tag));
+      WriteResourceCharArray(Decompositions[I].Decompositions);
+    end;
     FlushResource;
     WriteTextLine('}');
     WriteTextLine;
     WriteTextLine;
 
     // 5) canonical combining class data
-    WriteTextLine('COMBINING UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
+    WriteTextLine('LANGUAGE 0,0 COMBINING UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
     WriteTextLine('{');
     CreateResource;
     for I := 0 to 255 do
@@ -1529,7 +1527,7 @@ begin
 
     // 6) number data, this is actually two arrays, one which contains the numbers
     //    and the second containing the mapping between a code and a number
-    WriteTextLine('NUMBERS UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
+    WriteTextLine('LANGUAGE 0,0 NUMBERS UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
     WriteTextLine('{');
     CreateResource;
     // first, write the number definitions (size, values)
@@ -1554,17 +1552,17 @@ begin
     // 7 ) composition data
     // create composition data from decomposition data and exclusion list before generating the output
     CreateCompositions;
-    WriteTextLine('COMPOSITION UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
+    WriteTextLine('LANGUAGE 0,0 COMPOSITION UNICODEDATA LOADONCALL MOVEABLE DISCARDABLE');
     WriteTextLine('{');
     CreateResource;
     // first, write the number of compositions
     WriteResourceCardinal(Length(Compositions));
     for I := 0 to High(Compositions) do
-      with Compositions[I] do
     begin
-      WriteResourceChar(Code);
-      WriteResourceByte(Length(Decompositions));
-      WriteResourceCharArray(Decompositions);
+      WriteResourceChar(Compositions[I].Code);
+      WriteResourceByte(Length(Compositions[I].Decompositions));
+      WriteResourceByte(Byte(Compositions[I].Tag));
+      WriteResourceCharArray(Compositions[I].Decompositions);
     end;
     FlushResource;
     WriteTextLine('}');

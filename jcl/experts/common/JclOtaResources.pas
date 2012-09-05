@@ -40,19 +40,19 @@ uses
   JclBase;
 
 //=== JclOtaUtils.pas ========================================================
-{ TODO : consider replacing "Borland X Services" by "IDE X Services"}
 resourcestring
-  RsENoOTAServices = 'Unable to get Borland IDE Services';
-  RsENoNTAServices = 'Unable to get Borland NTA Services';
-  RsENoDebuggerServices = 'Unable to get Borland Debugger Services';
-  RsENoOTAAboutServices = 'Unable to get Borland About Services';
-  RsENoOTAModuleServices = 'Unable to get Borland Module Services';
-  RsENoOTAWizardServices = 'Unable to get Borland Wizard Services';
-  RsENoOTAPackageServices = 'Unable to get Borland Package Services';
-  RsENoOTAPersonalityServices = 'Unable to get Borland Personality Services';
+  RsENoOTAServices = 'Unable to get IDE Services';
+  RsENoNTAServices = 'Unable to get IDE NTA Services';
+  RsENoDebuggerServices = 'Unable to get IDE Debugger Services';
+  RsENoEditorServices = 'Unable to get IDE Editor Services';
+  RsENoOTAAboutServices = 'Unable to get IDE About Services';
+  RsENoOTAModuleServices = 'Unable to get IDE Module Services';
+  RsENoOTAWizardServices = 'Unable to get IDE Wizard Services';
+  RsENoOTAPackageServices = 'Unable to get IDE Package Services';
+  RsENoOTAPersonalityServices = 'Unable to get IDE Personality Services';
   RsENoOTAProjectManager = 'Unable to get project manager';
-  RsENoOTAMessageServices = 'Unable to get Borland Message Services';
-  RsENoOTAGalleryCategoryManager = 'Unable to get Borland Gallery Category Manager';
+  RsENoOTAMessageServices = 'Unable to get IDE Message Services';
+  RsENoOTAGalleryCategoryManager = 'Unable to get IDE Gallery Category Manager';
   RsENoModule = 'Unable to get Module';
   RsBadModuleHInstance = 'Unable to get module HInstance';
   RsENoRootDir = 'RootDir is empty';
@@ -60,7 +60,7 @@ resourcestring
   RsENoToolsMenu = 'Unable to get Tools menu';
 
   RsAboutDialogTitle = 'JEDI Code Library';
-  RsAboutTitle = 'JEDI Code Library';
+  RsAboutTitle = 'JEDI Code Library %d.%d.%d.%d';
   RsAboutDescription = 'JEDI Code Library http://jcl.delphi-jedi.org/' + NativeLineBreak +
                        'The JCL is a member of the JEDI Project http://www.delphi-jedi.org' + NativeLineBreak +
                        'Covered under the Mozilla Public License v1.1 (MPL 1.1)' + NativeLineBreak +
@@ -74,6 +74,7 @@ resourcestring
   RsELineTooLong = 'Line too long in project file';
   RsEUnterminatedComment = 'Unterminated comment in project file';
   RsBrowseToJCLRootDir = 'Browse to JCL root directory';
+  RsENoNTAEnvironmentOptionsServices = 'Unable to get IDE Environment Options Services';
 
 //=== JclExceptionForm.pas ===================================================
 resourcestring
@@ -132,7 +133,7 @@ resourcestring
 resourcestring
   RsExcDlgFileOptions = 'file options';
   RsLanguage = '&Language:';
-  RsFileName = '&File name:';
+  RsUnitFileName = '&Unit file name:';
   RsFormName = 'Form &name:';
   RsFormAncestor = 'Form &ancestor:';
   RsFileNameDialog = '&Save new file as...';
@@ -162,9 +163,10 @@ resourcestring
 //=== JclOtaExcDlgLogFrame.pas ===============================================
 resourcestring
   RsExcDlgLogOptions = 'log options';
+  RsLogFileName = '&Log file name:';
   RsLogTrace = '&Add crash data to log file';
   RsLogInWorkingDirectory = 'Autosave in &working directory';
-  RsLogInApplicationDirectory = 'Autosave in &application directory (not recommended)';
+  RsLogInApplicationDirectory = 'Autosave in a&pplication directory (not recommended)';
   RsLogInDesktopDirectory = 'Autosave in &desktop directory';
   RsLogSaveDialog = 'Add a save &button on dialog';
 

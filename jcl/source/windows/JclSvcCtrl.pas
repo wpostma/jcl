@@ -31,7 +31,7 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date::                                                                          $ }
+{ Last modified: $Date::                                                                         $ }
 { Revision:      $Rev::                                                                          $ }
 { Author:        $Author::                                                                       $ }
 {                                                                                                  }
@@ -383,6 +383,7 @@ uses
   {$ELSE ~FPC}
   {$IFDEF HAS_UNITSCOPE}
   Winapi.RegStr,
+  System.Types, // inlining of TList.Remove
   {$ELSE ~HAS_UNITSCOPE}
   RegStr,
   {$ENDIF ~HAS_UNITSCOPE}
@@ -1329,7 +1330,7 @@ begin
     RaiseLastOsError;
   CloseServiceHandle(Svc);
 
-  if (Description <> '') and (IsWin2K or IsWinXP) then
+  if (Description <> '') and (GetWindowsVersion >= wvWin2000) then
     RegWriteString(HKEY_LOCAL_MACHINE, '\' + REGSTR_PATH_SERVICES + '\' + ServiceName,
       'Description', Description);
 

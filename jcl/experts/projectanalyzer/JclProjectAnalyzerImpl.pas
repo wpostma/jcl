@@ -34,7 +34,7 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
-  JclOtaUtils, JclProjectAnalyzerFrm;
+  JclOtaUtils, JclOtaActions, JclProjectAnalyzerFrm;
 
 type
   TJclProjectAnalyzerExpert = class(TJclOTAExpert)
@@ -108,6 +108,9 @@ implementation
 {$R JclProjectAnalyzerIcon.res}
 
 uses
+  {$IFDEF HAS_UNIT_SYSTEM_ACTIONS}
+  System.Actions,
+  {$ENDIF HAS_UNIT_SYSTEM_ACTIONS}
   Variants,
   JclDebug, JclFileUtils, JclOtaConsts, 
   JclOtaResources;
@@ -378,7 +381,7 @@ begin
         if Assigned(Items[I].Action) then
           FBuildAction.Category := TContainedAction(Items[I].Action).Category;
         FBuildAction.ActionList := IDEActionList;
-        RegisterAction(FBuildAction);
+        TJclOTAActionExpert.RegisterAction(FBuildAction);
         FBuildMenuItem := TMenuItem.Create(nil);
         FBuildMenuItem.Name := JclProjectAnalyzeMenuName;
         FBuildMenuItem.Action := FBuildAction;
@@ -407,7 +410,7 @@ begin
   {$ENDIF BDS4_UP}
   {$ENDIF ~BDS7_UP}
 
-  UnregisterAction(FBuildAction);
+  TJclOTAActionExpert.UnregisterAction(FBuildAction);
   FreeAndNil(FBuildMenuItem);
   FreeAndNil(FBuildAction);
 end;

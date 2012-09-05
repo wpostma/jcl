@@ -40,6 +40,12 @@ uses
 var
   GlobalInstallations: TJclBorRADToolInstallations;
 
+procedure HandleException;
+begin
+  if (ExceptObject <> nil) and (ExceptObject is Exception) then
+    MessageBox(0, PChar('Exception ' + Exception(ExceptObject).ClassName + ': ' + Exception(ExceptObject).Message), 'CompInstall.dll', MB_OK or MB_ICONERROR);
+end;
+
 function GetPackageDescription(const BplFilename: string): string;
 var
   hLib: THandle;
@@ -96,71 +102,105 @@ var
   VStr: string;
   ConfigDataLocation: string;
 begin
-  Result := Installations.Count;
-  for I := 0 to Installations.Count - 1 do
-  begin
-    Inst := Installations[I];
+  try
+    Result := Installations.Count;
+    for I := 0 to Installations.Count - 1 do
+    begin
+      Inst := Installations[I];
 
-    ConfigDataLocation := Inst.ConfigDataLocation;
-    if (ConfigDataLocation <> '') and (ConfigDataLocation[1] = PathDelim) then
-      ConfigDataLocation := Copy(ConfigDataLocation, 2, MaxInt); // there is no such thing as an absolute "\Software" registry key
+      ConfigDataLocation := Inst.ConfigDataLocation;
+      if (ConfigDataLocation <> '') and (ConfigDataLocation[1] = PathDelim) then
+        ConfigDataLocation := Copy(ConfigDataLocation, 2, MaxInt); // there is no such thing as an absolute "\Software" registry key
 
-    case Inst.RadToolKind of
-      brDelphi:
-        begin
-          VStr := IntToStr(Inst.VersionNumber);
-          SetEnvironmentVariable(PChar('DELPHI' + VStr), PChar(Inst.RootDir));
-          SetEnvironmentVariable(PChar('DELPHI' + VStr + 'BPL'), PChar(Inst.BPLOutputPath));
-          SetEnvironmentVariable(PChar('DELPHI' + VStr + 'DCP'), PChar(Inst.DCPOutputPath));
-          SetEnvironmentVariable(PChar('DELPHI' + VStr + 'RegKey'), PChar(ConfigDataLocation));
-        end;
-      brCppBuilder:
-        begin
-          VStr := IntToStr(Inst.VersionNumber);
-          SetEnvironmentVariable(PChar('BCB' + VStr), PChar(Inst.RootDir));
-          SetEnvironmentVariable(PChar('BCB' + VStr + 'BPL'), PChar(Inst.BPLOutputPath));
-          SetEnvironmentVariable(PChar('BCB' + VStr + 'DCP'), PChar(Inst.DCPOutputPath));
-          SetEnvironmentVariable(PChar('BCB' + VStr + 'RegKey'), PChar(ConfigDataLocation));
-        end;
-      brBorlandDevStudio:
-        begin
-          if Inst.VersionNumber >= 7 then
-            VStr := IntToStr(7 + Inst.VersionNumber) // Delphi 14 is RAD Studio 7
-          else
-            VStr := IntToStr(9 - 3 + Inst.VersionNumber); // Delphi 9 is BDS 3
-          if bpDelphi32 in Inst.Personalities then
+      case Inst.RadToolKind of
+        brDelphi:
           begin
+            VStr := IntToStr(Inst.VersionNumber);
             SetEnvironmentVariable(PChar('DELPHI' + VStr), PChar(Inst.RootDir));
-            SetEnvironmentVariable(PChar('DELPHI' + VStr + 'BPL'), PChar(Inst.BPLOutputPath));
-            SetEnvironmentVariable(PChar('DELPHI' + VStr + 'DCP'), PChar(Inst.DCPOutputPath));
+            SetEnvironmentVariable(PChar('DELPHI' + VStr + 'BPL'), PChar(Inst.BPLOutputPath[bpWin32]));
+            SetEnvironmentVariable(PChar('DELPHI' + VStr + 'DCP'), PChar(Inst.DCPOutputPath[bpWin32]));
             SetEnvironmentVariable(PChar('DELPHI' + VStr + 'RegKey'), PChar(ConfigDataLocation));
           end;
-          if bpBCBuilder32 in Inst.Personalities then
+        brCppBuilder:
           begin
+            VStr := IntToStr(Inst.VersionNumber);
             SetEnvironmentVariable(PChar('BCB' + VStr), PChar(Inst.RootDir));
-            SetEnvironmentVariable(PChar('BCB' + VStr + 'BPL'), PChar(Inst.BPLOutputPath));
-            SetEnvironmentVariable(PChar('BCB' + VStr + 'DCP'), PChar(Inst.DCPOutputPath));
+            SetEnvironmentVariable(PChar('BCB' + VStr + 'BPL'), PChar(Inst.BPLOutputPath[bpWin32]));
+            SetEnvironmentVariable(PChar('BCB' + VStr + 'DCP'), PChar(Inst.DCPOutputPath[bpWin32]));
             SetEnvironmentVariable(PChar('BCB' + VStr + 'RegKey'), PChar(ConfigDataLocation));
           end;
-          SetEnvironmentVariable(PChar('BDSCOMMONDIR' + VStr), PChar(Inst.EnvironmentVariables.Values['BDSCOMMONDIR']));
-        end;
+        brBorlandDevStudio:
+          begin
+            if Inst.VersionNumber >= 7 then
+              VStr := IntToStr(7 + Inst.VersionNumber) // Delphi 14 is RAD Studio 7
+            else
+              VStr := IntToStr(9 - 3 + Inst.VersionNumber); // Delphi 9 is BDS 3
+            if bpDelphi32 in Inst.Personalities then
+            begin
+              SetEnvironmentVariable(PChar('DELPHI' + VStr), PChar(Inst.RootDir));
+              SetEnvironmentVariable(PChar('DELPHI' + VStr + 'BPL'), PChar(Inst.BPLOutputPath[bpWin32]));
+              SetEnvironmentVariable(PChar('DELPHI' + VStr + 'DCP'), PChar(Inst.DCPOutputPath[bpWin32]));
+              SetEnvironmentVariable(PChar('DELPHI' + VStr + 'RegKey'), PChar(ConfigDataLocation));
+            end;
+            if bpBCBuilder32 in Inst.Personalities then
+            begin
+              SetEnvironmentVariable(PChar('BCB' + VStr), PChar(Inst.RootDir));
+              SetEnvironmentVariable(PChar('BCB' + VStr + 'BPL'), PChar(Inst.BPLOutputPath[bpWin32]));
+              SetEnvironmentVariable(PChar('BCB' + VStr + 'DCP'), PChar(Inst.DCPOutputPath[bpWin32]));
+              SetEnvironmentVariable(PChar('BCB' + VStr + 'RegKey'), PChar(ConfigDataLocation));
+            end;
+            if bpDelphi64 in Inst.Personalities then
+            begin
+              SetEnvironmentVariable(PChar('DELPHI' + VStr), PChar(Inst.RootDir));
+              SetEnvironmentVariable(PChar('DELPHI' + VStr + 'BPL_x64'), PChar(Inst.BPLOutputPath[bpWin64]));
+              SetEnvironmentVariable(PChar('DELPHI' + VStr + 'DCP_x64'), PChar(Inst.DCPOutputPath[bpWin64]));
+              SetEnvironmentVariable(PChar('DELPHI' + VStr + 'RegKey'), PChar(ConfigDataLocation));
+            end;
+            if bpBCBuilder64 in Inst.Personalities then
+            begin
+              SetEnvironmentVariable(PChar('BCB' + VStr), PChar(Inst.RootDir));
+              SetEnvironmentVariable(PChar('BCB' + VStr + 'BPL_x64'), PChar(Inst.BPLOutputPath[bpWin64]));
+              SetEnvironmentVariable(PChar('BCB' + VStr + 'DCP_x64'), PChar(Inst.DCPOutputPath[bpWin64]));
+              SetEnvironmentVariable(PChar('BCB' + VStr + 'RegKey'), PChar(ConfigDataLocation));
+            end;
+            SetEnvironmentVariable(PChar('BDSCOMMONDIR' + VStr), PChar(Inst.EnvironmentVariables.Values['BDSCOMMONDIR']));
+          end;
+      end;
     end;
+  except
+    HandleException;
+    Result := 0;
   end;
 end;
 
 function compinst_IsDelphiInstalled(Version: Integer): Integer; stdcall;
 begin
-  Result := Ord(Installations.DelphiVersionInstalled[Version]);
+  try
+    Result := Ord(Installations.DelphiVersionInstalled[Version]);
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_IsBCBInstalled(Version: Integer): Integer; stdcall;
 begin
-  Result := Ord(Installations.BCBVersionInstalled[Version]);
+  try
+    Result := Ord(Installations.BCBVersionInstalled[Version]);
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_IsBDSInstalled(IDEVersion: Integer): Integer; stdcall;
 begin
-  Result := Ord(Installations.BDSVersionInstalled[IDEVersion]);
+  try
+    Result := Ord(Installations.BDSVersionInstalled[IDEVersion]);
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 { Design Packages }
@@ -173,12 +213,16 @@ begin
   Result := 0;
   if Inst <> nil then
   begin
-    Descr := Description;
-    if Descr = '' then
-      Descr := GetPackageDescription(BplFilename);
-    Filename := ExpandFileNameCase(BplFilename, MatchFound); // correct file name
-    if Inst.RegisterPackage(Filename, Descr) then
-      Result := 1;
+    try
+      Descr := Description;
+      if Descr = '' then
+        Descr := GetPackageDescription(BplFilename);
+      Filename := ExpandFileNameCase(BplFilename, MatchFound); // correct file name
+      if Inst.RegisterPackage(Filename, Descr) then
+        Result := 1;
+    except
+      HandleException;
+    end;
   end;
 end;
 
@@ -218,10 +262,8 @@ var
 begin
   Result := 0;
   if Inst <> nil then
-  begin
     if Inst.RegisterExpert(ExpandFileNameCase(Filename, MatchFound), Description) then
       Result := 1;
-  end;
 end;
 
 function UninstallExpert(Inst: TJclBorRADToolInstallation; const Filename: string): Integer;
@@ -254,35 +296,72 @@ end;
 
 { Search Paths }
 
+function ReplacePlatform(const Paths: string; BDSPlatform: TJclBDSPlatform): string;
+begin
+  case BDSPlatform of
+    bpWin32:
+      Result := StringReplace(Paths, '$(Platform)', 'Win32', [rfReplaceAll, rfIgnoreCase]);
+    bpWin64:
+      Result := StringReplace(Paths, '$(Platform)', 'Win64', [rfReplaceAll, rfIgnoreCase]);
+//    bpOSX32:
+//      Result := StringReplace(Paths, '$(Platform)', 'OSX32', [rfReplaceAll, rfIgnoreCase]);
+  else
+    Result := Paths;
+  end;
+end;
+
 function ChangeSearchPaths(Inst: TJclBorRADToolInstallation; Installing: Boolean;
   const SearchPaths, DebugPaths, BrowsePaths, IncludePaths: string): Integer;
+
+  procedure AddPaths(BDSPlatform: TJclBDSPlatform);
+  begin
+    Inst.AddToLibrarySearchPath(ReplacePlatform(SearchPaths, BDSPlatform), BDSPlatform);
+    Inst.AddToDebugDCUPath(ReplacePlatform(DebugPaths, BDSPlatform), BDSPlatform);
+    Inst.AddToLibraryBrowsingPath(ReplacePlatform(BrowsePaths, BDSPlatform), BDSPlatform);
+    if Inst is TJclBDSInstallation then
+    begin
+      if ((BDSPlatform = bpWin32) and (bpBCBuilder32 in Inst.Personalities)) or
+         ((BDSPlatform = bpWin64) and (bpBCBuilder64 in Inst.Personalities)) then
+      begin
+        TJclBDSInstallation(Inst).AddToCppLibraryPath(ReplacePlatform(SearchPaths, BDSPlatform), BDSPlatform); // for .lib and .bpi
+        TJclBDSInstallation(Inst).AddToCppIncludePath(ReplacePlatform(IncludePaths, BDSPlatform), BDSPlatform);
+        TJclBDSInstallation(Inst).AddToCppBrowsingPath(ReplacePlatform(BrowsePaths, BDSPlatform), BDSPlatform);
+      end;
+    end;
+  end;
+
+  procedure RemovePaths(BDSPlatform: TJclBDSPlatform);
+  begin
+    Inst.RemoveFromLibrarySearchPath(ReplacePlatform(SearchPaths, BDSPlatform), BDSPlatform);
+    Inst.RemoveFromDebugDCUPath(ReplacePlatform(DebugPaths, BDSPlatform), BDSPlatform);
+    Inst.RemoveFromLibraryBrowsingPath(ReplacePlatform(BrowsePaths, BDSPlatform), BDSPlatform);
+    if Inst is TJclBDSInstallation then
+    begin
+      if ((BDSPlatform = bpWin32) and (bpBCBuilder32 in Inst.Personalities)) or
+         ((BDSPlatform = bpWin64) and (bpBCBuilder64 in Inst.Personalities)) then
+      begin
+        TJclBDSInstallation(Inst).RemoveFromCppLibraryPath(ReplacePlatform(SearchPaths, BDSPlatform), BDSPlatform); // for .lib and .bpi
+        TJclBDSInstallation(Inst).RemoveFromCppIncludePath(ReplacePlatform(IncludePaths, BDSPlatform), BDSPlatform);
+        TJclBDSInstallation(Inst).RemoveFromCppBrowsingPath(ReplacePlatform(BrowsePaths, BDSPlatform), BDSPlatform);
+      end;
+    end;
+  end;
+
 begin
   Result := 0;
   if Inst <> nil then
   begin
     if Installing then
     begin
-      Inst.AddToLibrarySearchPath(SearchPaths);
-      Inst.AddToDebugDCUPath(DebugPaths);
-      Inst.AddToLibraryBrowsingPath(BrowsePaths);
-      if Inst is TJclBDSInstallation then
-      begin
-        TJclBDSInstallation(Inst).AddToCppBrowsingPath(BrowsePaths);
-        TJclBDSInstallation(Inst).AddToCppIncludePath(IncludePaths);
-        TJclBDSInstallation(Inst).AddToCppLibraryPath(SearchPaths); // for .lib and .bpi
-      end;
+      AddPaths(bpWin32);
+      if [bpDelphi64, bpBCBuilder64] * Inst.Personalities <> [] then
+        AddPaths(bpWin64);
     end
     else
     begin
-      Inst.RemoveFromLibrarySearchPath(SearchPaths);
-      Inst.RemoveFromDebugDCUPath(DebugPaths);
-      Inst.RemoveFromLibraryBrowsingPath(BrowsePaths);
-      if Inst is TJclBDSInstallation then
-      begin
-        TJclBDSInstallation(Inst).RemoveFromCppBrowsingPath(BrowsePaths);
-        TJclBDSInstallation(Inst).RemoveFromCppIncludePath(IncludePaths);
-        TJclBDSInstallation(Inst).RemoveFromCppLibraryPath(SearchPaths); // for .lib and .bpi
-      end;
+      RemovePaths(bpWin32);
+      if [bpDelphi64, bpBCBuilder64] * Inst.Personalities <> [] then
+        RemovePaths(bpWin64);
     end;
     Result := 1;
   end;
@@ -292,86 +371,166 @@ end;
 
 function compinst_installDelphiDesignPackage(Version: Integer; const BplFilename, Description: PAnsiChar): Integer; stdcall;
 begin
-  Result := InstallDesignPackage(Installations.DelphiInstallationFromVersion[Version], string(BplFilename), string(Description));
+  try
+    Result := InstallDesignPackage(Installations.DelphiInstallationFromVersion[Version], string(BplFilename), string(Description));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_installBCBDesignPackage(Version: Integer; const BplFilename, Description: PAnsiChar): Integer; stdcall;
 begin
-  Result := InstallDesignPackage(Installations.BCBInstallationFromVersion[Version], string(BplFilename), string(Description));
+  try
+    Result := InstallDesignPackage(Installations.BCBInstallationFromVersion[Version], string(BplFilename), string(Description));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_uninstallDelphiDesignPackage(Version: Integer; const BplFilename: PAnsiChar): Integer; stdcall;
 begin
-  Result := UninstallDesignPackage(Installations.DelphiInstallationFromVersion[Version], string(BplFilename));
+  try
+    Result := UninstallDesignPackage(Installations.DelphiInstallationFromVersion[Version], string(BplFilename));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_uninstallBCBDesignPackage(Version: Integer; const BplFilename: PAnsiChar): Integer; stdcall;
 begin
-  Result := UninstallDesignPackage(Installations.BCBInstallationFromVersion[Version], string(BplFilename));
+  try
+    Result := UninstallDesignPackage(Installations.BCBInstallationFromVersion[Version], string(BplFilename));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_uninstallDelphiDesignPackagesPrefixed(Version: Integer; BplFilenamePrefix: PAnsiChar): Integer; stdcall;
 begin
-  Result := UninstallDesignPackagesPrefixed(Installations.DelphiInstallationFromVersion[Version], string(BplFilenamePrefix));
+  try
+    Result := UninstallDesignPackagesPrefixed(Installations.DelphiInstallationFromVersion[Version], string(BplFilenamePrefix));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_uninstallBCBDesignPackagesPrefixed(Version: Integer; BplFilenamePrefix: PAnsiChar): Integer; stdcall;
 begin
-  Result := UninstallDesignPackagesPrefixed(Installations.BCBInstallationFromVersion[Version], string(BplFilenamePrefix));
+  try
+    Result := UninstallDesignPackagesPrefixed(Installations.BCBInstallationFromVersion[Version], string(BplFilenamePrefix));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 { Experts }
 
 function compinst_installDelphiExpert(Version: Integer; const Filename, Description: PAnsiChar): Integer; stdcall;
 begin
-  Result := InstallExpert(Installations.DelphiInstallationFromVersion[Version], string(Filename), string(Description));
+  try
+    Result := InstallExpert(Installations.DelphiInstallationFromVersion[Version], string(Filename), string(Description));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_installBCBExpert(Version: Integer; const Filename, Description: PAnsiChar): Integer; stdcall;
 begin
-  Result := InstallExpert(Installations.BCBInstallationFromVersion[Version], string(Filename), string(Description));
+  try
+    Result := InstallExpert(Installations.BCBInstallationFromVersion[Version], string(Filename), string(Description));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_uninstallDelphiExpert(Version: Integer; const Filename: PAnsiChar): Integer; stdcall;
 begin
-  Result := UninstallExpert(Installations.DelphiInstallationFromVersion[Version], string(Filename));
+  try
+    Result := UninstallExpert(Installations.DelphiInstallationFromVersion[Version], string(Filename));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_uninstallBCBExpert(Version: Integer; const Filename: PAnsiChar): Integer; stdcall;
 begin
-  Result := UninstallExpert(Installations.BCBInstallationFromVersion[Version], string(Filename));
+  try
+    Result := UninstallExpert(Installations.BCBInstallationFromVersion[Version], string(Filename));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_uninstallDelphiExpertsPrefixed(Version: Integer; FilenamePrefix: PAnsiChar): Integer; stdcall;
 begin
-  Result := UninstallExpertsPrefixed(Installations.DelphiInstallationFromVersion[Version], string(FilenamePrefix));
+  try
+    Result := UninstallExpertsPrefixed(Installations.DelphiInstallationFromVersion[Version], string(FilenamePrefix));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_uninstallBCBExpertsPrefixed(Version: Integer; FilenamePrefix: PAnsiChar): Integer; stdcall;
 begin
-  Result := UninstallExpertsPrefixed(Installations.BCBInstallationFromVersion[Version], string(FilenamePrefix));
+  try
+    Result := UninstallExpertsPrefixed(Installations.BCBInstallationFromVersion[Version], string(FilenamePrefix));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 { Search Paths }
 
 function compinst_addDelphiSearchPaths(Version: Integer; SearchPaths, DebugPaths, BrowsePaths, IncludePaths: PAnsiChar): Integer; stdcall;
 begin
-  Result := ChangeSearchPaths(Installations.DelphiInstallationFromVersion[Version], True, string(SearchPaths), string(DebugPaths), string(BrowsePaths), string(IncludePaths));
+  try
+    Result := ChangeSearchPaths(Installations.DelphiInstallationFromVersion[Version], True, string(SearchPaths), string(DebugPaths), string(BrowsePaths), string(IncludePaths));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_addBCBSearchPaths(Version: Integer; SearchPaths, DebugPaths, BrowsePaths, IncludePaths: PAnsiChar): Integer; stdcall;
 begin
-  Result := ChangeSearchPaths(Installations.BCBInstallationFromVersion[Version], True, string(SearchPaths), string(DebugPaths), string(BrowsePaths), string(IncludePaths));
+  try
+    Result := ChangeSearchPaths(Installations.BCBInstallationFromVersion[Version], True, string(SearchPaths), string(DebugPaths), string(BrowsePaths), string(IncludePaths));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_removeDelphiSearchPaths(Version: Integer; SearchPaths, DebugPaths, BrowsePaths, IncludePaths: PAnsiChar): Integer; stdcall;
 begin
-  Result := ChangeSearchPaths(Installations.DelphiInstallationFromVersion[Version], False, string(SearchPaths), string(DebugPaths), string(BrowsePaths), string(IncludePaths));
+  try
+    Result := ChangeSearchPaths(Installations.DelphiInstallationFromVersion[Version], False, string(SearchPaths), string(DebugPaths), string(BrowsePaths), string(IncludePaths));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 function compinst_removeBCBSearchPaths(Version: Integer; SearchPaths, DebugPaths, BrowsePaths, IncludePaths: PAnsiChar): Integer; stdcall;
 begin
-  Result := ChangeSearchPaths(Installations.BCBInstallationFromVersion[Version], False, string(SearchPaths), string(DebugPaths), string(BrowsePaths), string(IncludePaths));
+  try
+    Result := ChangeSearchPaths(Installations.BCBInstallationFromVersion[Version], False, string(SearchPaths), string(DebugPaths), string(BrowsePaths), string(IncludePaths));
+  except
+    HandleException;
+    Result := 0;
+  end;
 end;
 
 initialization

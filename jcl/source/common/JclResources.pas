@@ -1128,7 +1128,7 @@ resourcestring
   RsCompressionCramFSName            = 'CramFS archive';
   RsCompressionCramFSExtensions      = '*.cramfs';
   RsCompressionDuplicate             = 'The file %s already exists in the archive';
-  RsCompressionReplaceError          = 'At least one compression volumes could not be replaced after an archive out-of-place update';
+  RsCompressionReplaceError          = 'At least one compression volume could not be replaced after an archive out-of-place update';
 
 //=== JclConsole =============================================================
 resourcestring
@@ -1451,7 +1451,9 @@ resourcestring
   RsErrMatchLimit    = 'Match limit';
   RsErrCallout       = 'Callout';
   RsErrBadUTF8       = 'Bad UTF-8';
+  RsErrBadUTF16      = 'Bad UTF-16';
   RsErrBadUTF8Offset = 'Bad UTF-8 offset';
+  RsErrBadUTF16Offset = 'Bad UTF-16 offset';
   RsErrPartial       = 'Partial';
   RsErrBadPartial    = 'Bad partial';
   RsErrInternal      = 'Internal';
@@ -1464,12 +1466,22 @@ resourcestring
   RsErrRecursionLimit = 'Recursion limit';
   RsErrNullWsLimit   = 'Null WS limit';
   RsErrBadNewLine    = 'Bad new line';
+  RsErrBadOffset     = 'Bad offset';
+  RsErrShortUTF8     = 'Short UTF-8';
+  RsErrShortUTF16    = 'Short UTF-16';
+  RsErrRecurseLoop   = 'Recurse loop';
+  RsErrJITStackLimit = 'JIT stack limit';
   RsErrLibNotLoaded  = 'PCRE library not loaded';
   RsErrMemFuncNotSet = 'PCRE memory management functions not set';
-  RsErrStudyFailed   = 'Study failed'; 
+  RsErrStudyFailed   = 'Study failed';
   RsErrCalloutError  = 'Unhandled exception in callout';
   RsErrUnknownError  = 'Unknown error';
-  RsErrNoUTF8Support = 'No UTF8 support in this version of PCRE';
+  RsErrNoUTF8Support = 'No UTF-8 support in this version of PCRE';
+  RsErrNoUTF16Support = 'No UTF-16 support in this version of PCRE';
+  RsErrNoJITSupport  = 'No JIT support in this version of PCRE';
+  RsErrBadMode       = 'Bad Mode';
+  RsErrBadEndianness = 'Bad endianness';
+  RsErrBadRestart    = 'Bad Restart';
 
 //=== JclPeImage =============================================================
 resourcestring
@@ -1918,6 +1930,8 @@ resourcestring
   RsOSVersionWinServer2008      = 'Windows Server 2008';
   RsOSVersionWin7               = 'Windows 7';
   RsOSVersionWinServer2008R2    = 'Windows Server 2008 R2';
+  RsOSVersionWin8               = 'Windows 8';
+  RsOSVersionWinServer2012      = 'Windows Server 2012';
 
   RsEditionWinXPHome            = 'Home Edition';
   RsEditionWinXPPro             = 'Professional';

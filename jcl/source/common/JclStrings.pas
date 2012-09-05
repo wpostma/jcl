@@ -278,13 +278,24 @@ function StrSearch(const Substr, S: string; const Index: SizeInt = 1): SizeInt;
 function StrSuffixIndex(const S: string; const Suffixes: array of string): SizeInt;
 
 // String Extraction
+// Returns the String before SubStr
 function StrAfter(const SubStr, S: string): string;
+/// Returns the string after SubStr
 function StrBefore(const SubStr, S: string): string;
+/// Splits a string at SubStr, returns true when SubStr is found, Left contains the
+/// string before the SubStr and Rigth the string behind SubStr
+function StrSplit(const SubStr, S: string;var Left, Right : string): boolean;
+/// Returns the string between Start and Stop
 function StrBetween(const S: string; const Start, Stop: Char): string;
+/// Returns the left N characters of the string
 function StrChopRight(const S: string; N: SizeInt): string;
+/// Returns the left Count characters of the string
 function StrLeft(const S: string; Count: SizeInt): string;
+/// Returns the string starting from position Start for the Count Characters
 function StrMid(const S: string; Start, Count: SizeInt): string;
+/// Returns the string starting from position N to the end
 function StrRestOf(const S: string; N: SizeInt): string;
+/// Returns the right Count characters of the string
 function StrRight(const S: string; Count: SizeInt): string;
 
 // Character Test Routines
@@ -298,8 +309,8 @@ function CharIsDigit(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {
 function CharIsFracDigit(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
 function CharIsHexDigit(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
 function CharIsLower(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
-function CharIsNumberChar(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
-function CharIsNumber(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+function CharIsNumberChar(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} {$IFDEF COMPILER16_UP} inline; {$ENDIF} {$ENDIF}
+function CharIsNumber(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} {$IFDEF COMPILER16_UP} inline; {$ENDIF} {$ENDIF}
 function CharIsPrintable(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
 function CharIsPunctuation(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
 function CharIsReturn(const C: Char): Boolean; {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
@@ -1203,7 +1214,7 @@ begin
     P := PChar(S);
     for I := 1 to L do
     begin
-      P^ := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.ToLower(P^);
+      P^ := TCharacter.ToLower(P^);
       Inc(P);
     end;
   end;
@@ -1220,7 +1231,7 @@ begin
   if S <> nil then
   begin
     repeat
-      S^ := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.ToLower(S^);
+      S^ := TCharacter.ToLower(S^);
       Inc(S);
     until S^ = #0;
   end;
@@ -1959,7 +1970,7 @@ begin
     P := PChar(S);
     for I := 1 to L do
     begin
-      P^ := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.ToUpper(P^);
+      P^ := TCharacter.ToUpper(P^);
       Inc(P);
     end;
   end;
@@ -1976,7 +1987,7 @@ begin
   if S <> nil then
   begin
     repeat
-      S^ := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.ToUpper(S^);
+      S^ := TCharacter.ToUpper(S^);
       Inc(S);
     until S^ = #0;
   end;
@@ -2715,6 +2726,23 @@ begin
     Result := StrLeft(S, P - 1);
 end;
 
+function StrSplit(const SubStr, S: string;var Left, Right : string): boolean;
+var
+  P: SizeInt;
+begin
+  P := StrFind(SubStr, S, 1);
+  Result:= p > 0;
+  if Result then
+  begin
+    Left := StrLeft(S, P - 1);
+    Right := StrRestOf(S, P + Length(SubStr));
+  end
+  else
+  begin
+    Left := '';
+    Right := '';
+  end;
+end;
 
 function StrBetween(const S: string; const Start, Stop: Char): string;
 var
@@ -2771,7 +2799,7 @@ end;
 function CharIsAlpha(const C: Char): Boolean;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.IsLetter(C);
+  Result := TCharacter.IsLetter(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := (StrCharTypes[C] and C1_ALPHA) <> 0;
   {$ENDIF ~UNICODE_RTL_DATABASE}
@@ -2780,7 +2808,7 @@ end;
 function CharIsAlphaNum(const C: Char): Boolean;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.IsLetterOrDigit(C);
+  Result := TCharacter.IsLetterOrDigit(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := ((StrCharTypes[C] and C1_ALPHA) <> 0) or ((StrCharTypes[C] and C1_DIGIT) <> 0);
   {$ENDIF ~UNICODE_RTL_DATABASE}
@@ -2799,7 +2827,7 @@ end;
 function CharIsControl(const C: Char): Boolean;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.IsControl(C);
+  Result := TCharacter.IsControl(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := (StrCharTypes[C] and C1_CNTRL) <> 0;
   {$ENDIF ~UNICODE_RTL_DATABASE}
@@ -2813,7 +2841,7 @@ end;
 function CharIsDigit(const C: Char): Boolean;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.IsDigit(C);
+  Result := TCharacter.IsDigit(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := (StrCharTypes[C] and C1_DIGIT) <> 0;
   {$ENDIF ~UNICODE_RTL_DATABASE}
@@ -2838,7 +2866,7 @@ end;
 function CharIsLower(const C: Char): Boolean;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.IsLower(C);
+  Result := TCharacter.IsLower(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := (StrCharTypes[C] and C1_LOWER) <> 0;
   {$ENDIF ~UNICODE_RTL_DATABASE}
@@ -2862,7 +2890,7 @@ end;
 function CharIsPunctuation(const C: Char): Boolean;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.IsPunctuation(C);
+  Result := TCharacter.IsPunctuation(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := ((StrCharTypes[C] and C1_PUNCT) <> 0);
   {$ENDIF ~UNICODE_RTL_DATABASE}
@@ -2876,7 +2904,7 @@ end;
 function CharIsSpace(const C: Char): Boolean;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.IsWhiteSpace(C);
+  Result := TCharacter.IsWhiteSpace(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := (StrCharTypes[C] and C1_SPACE) <> 0;
   {$ENDIF ~UNICODE_RTL_DATABASE}
@@ -2885,7 +2913,7 @@ end;
 function CharIsUpper(const C: Char): Boolean;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.IsUpper(C);
+  Result := TCharacter.IsUpper(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := (StrCharTypes[C] and C1_UPPER) <> 0;
   {$ENDIF ~UNICODE_RTL_DATABASE}
@@ -3035,7 +3063,7 @@ end;
 function CharLower(const C: Char): Char;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.ToLower(C);
+  Result := TCharacter.ToLower(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := StrCaseMap[Ord(C) + StrLoOffset];
   {$ENDIF ~UNICODE_RTL_DATABASE}
@@ -3058,7 +3086,7 @@ end;
 function CharUpper(const C: Char): Char;
 begin
   {$IFDEF UNICODE_RTL_DATABASE}
-  Result := {$IFDEF HAS_UNITSCOPE}System.{$ENDIF}Character.ToUpper(C);
+  Result := TCharacter.ToUpper(C);
   {$ELSE ~UNICODE_RTL_DATABASE}
   Result := StrCaseMap[Ord(C) + StrUpOffset];
   {$ENDIF ~UNICODE_RTL_DATABASE}

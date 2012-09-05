@@ -68,10 +68,16 @@ type
   protected
     FPages: IJclIntfList;
     FAutoAcceptDialogs: TDialogTypes;
+    FAutoAcceptMPL: Boolean;
     FAutoCloseOnFailure: Boolean;
     FAutoCloseOnSuccess: Boolean;
     FAutoInstall: Boolean;
     FAutoUninstall: Boolean;
+    FContinueOnTargetError: Boolean;
+    FXMLResultFileName: string;
+    FIncludeLogFilesInXML: Boolean;
+    FDeletePreviousLogFiles: Boolean;
+
     procedure HandleException(Sender: TObject; E: Exception);
     procedure SetFrameIcon(Sender: TObject; const FileName: string);
     procedure WMAfterShow(var Message: TMessage); Message WM_AFTERSHOW;
@@ -96,6 +102,8 @@ type
     procedure SetProgress(Value: Integer);
     function GetAutoAcceptDialogs: TDialogTypes;
     procedure SetAutoAcceptDialogs(Value: TDialogTypes);
+    function GetAutoAcceptMPL: Boolean;
+    procedure SetAutoAcceptMPL(Value: Boolean);
     function GetAutoCloseOnFailure: Boolean;
     procedure SetAutoCloseOnFailure(Value: Boolean);
     function GetAutoCloseOnSuccess: Boolean;
@@ -104,6 +112,14 @@ type
     procedure SetAutoInstall(Value: Boolean);
     function GetAutoUninstall: Boolean;
     procedure SetAutoUninstall(Value: Boolean);
+    function GetContinueOnTargetError: Boolean;
+    procedure SetContinueOnTargetError(Value: Boolean);
+    function GetXMLResultFileName: string;
+    procedure SetXMLResultFileName(const Value: string);
+    function GetDeletePreviousLogFiles: Boolean;
+    procedure SetDeletePreviousLogFiles(Value: Boolean);
+    function GetIncludeLogFilesInXML: Boolean;
+    procedure SetIncludeLogFilesInXML(Value: Boolean);
     procedure Execute;
   end;
 
@@ -112,6 +128,9 @@ implementation
 {$R *.dfm}
 
 uses
+  {$IFDEF HAS_UNIT_SYSTEM_UITYPES}
+  UITypes,
+  {$ENDIF HAS_UNIT_SYSTEM_UITYPES}
   FileCtrl,
   JclDebug, JclShell, JediGUIProfiles,
   JclBase, JclFileUtils, JclStrings, JclSysInfo, JclSysUtils, JclArrayLists,
@@ -125,6 +144,11 @@ function CreateMainForm: IJediInstallGUI;
 var
   MainForm: TMainForm;
 begin
+  {$IFDEF RTL185_UP}
+  Application.MainFormOnTaskbar := True;
+  {$ENDIF RTL185_UP}
+  Application.Initialize;
+  Application.Title := 'JEDI Installer';
   Application.CreateForm(TMainForm, MainForm);
   Result := MainForm;
 end;
@@ -135,6 +159,7 @@ constructor TMainForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FPages := TJclIntfArrayList.Create(5);
+  Application.OnException := HandleException;
 end;
 
 destructor TMainForm.Destroy;
@@ -143,30 +168,17 @@ begin
   inherited Destroy;
 end;
 
-procedure TMainForm.HandleException(Sender: TObject; E: Exception);
-begin
-  if E is EJediInstallInitFailure then
-  begin
-    Dialog(E.Message, dtError);
-    Application.ShowMainForm := False;
-    Application.Terminate;
-  end
-  else
-    Application.ShowException(E);
-end;
-
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  SetStatus('');
+
   Caption := LoadResString(@RsGUIJEDIInstaller);
   Title.Caption := LoadResString(@RsGUIProjectJEDIInstaller);
   InstallBtn.Caption := LoadResString(@RsGUIInstall);
   UninstallBtn.Caption := LoadResString(@RsGUIUninstall);
   QuitBtn.Caption := LoadResString(@RsGUIQuit);
 
-  Application.OnException := HandleException;
   JediImage.Hint := DelphiJediURL;
-
-  SetStatus('');
 
   TitlePanel.DoubleBuffered := True;
   {$IFDEF COMPILER7_UP}
@@ -233,6 +245,11 @@ begin
   end;
 end;
 
+procedure TMainForm.SetIncludeLogFilesInXML(Value: Boolean);
+begin
+  FIncludeLogFilesInXML := Value;
+end;
+
 procedure TMainForm.QuitBtnClick(Sender: TObject);
 begin
   Close;
@@ -287,6 +304,18 @@ procedure TMainForm.JediImageClick(Sender: TObject);
 begin
   { TODO : implement for Unix }
   ShellExecEx(DelphiJediURL);
+end;
+
+procedure TMainForm.HandleException(Sender: TObject; E: Exception);
+begin
+  if E is EJediInstallInitFailure then
+  begin
+    Dialog(E.Message, dtError);
+    Application.ShowMainForm := False;
+    Application.Terminate;
+  end
+  else
+    Application.ShowException(E);
 end;
 
 function TMainForm.Dialog(const Text: string; DialogType: TDialogType = dtInformation;
@@ -353,7 +382,7 @@ begin
   ATabSheet.PageControl := ProductsPageControl;
   ATabSheet.ImageIndex := -1;
 
-  AInstallFrame := TInstallFrame.Create(Self);
+  AInstallFrame := TInstallFrame.Create(Self, Self);
   AInstallFrame.Parent := ATabSheet;
   AInstallFrame.Align := alClient;
   AInstallFrame.TreeView.Images := ImageList;
@@ -397,6 +426,11 @@ begin
   Result := StatusLabel.Caption;
 end;
 
+function TMainForm.GetXMLResultFileName: string;
+begin
+  Result := FXMLResultFileName;
+end;
+
 procedure TMainForm.SetStatus(const Value: string);
 begin
   if Value = '' then
@@ -413,9 +447,19 @@ begin
   Application.ProcessMessages;  //Update;
 end;
 
+procedure TMainForm.SetXMLResultFileName(const Value: string);
+begin
+  FXMLResultFileName := Value;
+end;
+
 function TMainForm.GetAutoAcceptDialogs: TDialogTypes;
 begin
   Result := FAutoAcceptDialogs;
+end;
+
+function TMainForm.GetAutoAcceptMPL: Boolean;
+begin
+  Result := FAutoAcceptMPL;
 end;
 
 function TMainForm.GetAutoCloseOnFailure: Boolean;
@@ -443,9 +487,29 @@ begin
   Result := Caption;
 end;
 
+function TMainForm.GetContinueOnTargetError: Boolean;
+begin
+  Result := FContinueOnTargetError;
+end;
+
+function TMainForm.GetDeletePreviousLogFiles: Boolean;
+begin
+  Result := FDeletePreviousLogFiles;
+end;
+
+function TMainForm.GetIncludeLogFilesInXML: Boolean;
+begin
+  Result := FIncludeLogFilesInXML;
+end;
+
 procedure TMainForm.SetAutoAcceptDialogs(Value: TDialogTypes);
 begin
   FAutoAcceptDialogs := Value;
+end;
+
+procedure TMainForm.SetAutoAcceptMPL(Value: Boolean);
+begin
+  FAutoAcceptMPL := Value;
 end;
 
 procedure TMainForm.SetAutoCloseOnFailure(Value: Boolean);
@@ -473,6 +537,16 @@ begin
   Caption := Value;
 end;
 
+procedure TMainForm.SetContinueOnTargetError(Value: Boolean);
+begin
+  FContinueOnTargetError := Value;
+end;
+
+procedure TMainForm.SetDeletePreviousLogFiles(Value: Boolean);
+begin
+  FDeletePreviousLogFiles := Value;
+end;
+
 function TMainForm.GetProgress: Integer;
 begin
   Result := ProgressBar.Position;
@@ -490,6 +564,6 @@ end;
 
 initialization
 
-InstallCore.InstallGUICreator := CreateMainForm;
+  InstallCore.InstallGUICreator := CreateMainForm;
 
 end.

@@ -54,13 +54,15 @@ uses
   JclAbstractContainers, JclContainerIntf, JclArrayLists, JclArraySets;
 
 type
-  TJclIntfIntfSortedEntry = record
+  TJclIntfIntfSortedMapEntry = record
     Key: IInterface;
     Value: IInterface;
   end;
 
+  TJclIntfIntfSortedMapEntryArray = array of TJclIntfIntfSortedMapEntry;
+
   TJclIntfIntfSortedMap = class(TJclIntfAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntfContainer,
     IJclIntfIntfMap, IJclIntfIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -69,11 +71,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclIntfIntfSortedEntry;
+    FEntries: TJclIntfIntfSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -102,13 +111,15 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfIntfSortedMap;
   end;
 
-  TJclAnsiStrIntfSortedEntry = record
+  TJclAnsiStrIntfSortedMapEntry = record
     Key: AnsiString;
     Value: IInterface;
   end;
 
+  TJclAnsiStrIntfSortedMapEntryArray = array of TJclAnsiStrIntfSortedMapEntry;
+
   TJclAnsiStrIntfSortedMap = class(TJclAnsiStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclAnsiStrContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclAnsiStrContainer, IJclIntfContainer,
     IJclAnsiStrIntfMap, IJclAnsiStrIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -117,11 +128,18 @@ type
     function KeysCompare(const A, B: AnsiString): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclAnsiStrIntfSortedEntry;
+    FEntries: TJclAnsiStrIntfSortedMapEntryArray;
     function BinarySearch(const Key: AnsiString): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclAnsiStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclAnsiStrIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclAnsiStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclAnsiStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -150,13 +168,15 @@ type
     function TailMap(const FromKey: AnsiString): IJclAnsiStrIntfSortedMap;
   end;
 
-  TJclIntfAnsiStrSortedEntry = record
+  TJclIntfAnsiStrSortedMapEntry = record
     Key: IInterface;
     Value: AnsiString;
   end;
 
+  TJclIntfAnsiStrSortedMapEntryArray = array of TJclIntfAnsiStrSortedMapEntry;
+
   TJclIntfAnsiStrSortedMap = class(TJclAnsiStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclAnsiStrContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclIntfContainer, IJclAnsiStrContainer,
     IJclIntfAnsiStrMap, IJclIntfAnsiStrSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -165,11 +185,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(const A, B: AnsiString): Integer;
   private
-    FEntries: array of TJclIntfAnsiStrSortedEntry;
+    FEntries: TJclIntfAnsiStrSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfAnsiStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -198,13 +225,15 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfAnsiStrSortedMap;
   end;
 
-  TJclAnsiStrAnsiStrSortedEntry = record
+  TJclAnsiStrAnsiStrSortedMapEntry = record
     Key: AnsiString;
     Value: AnsiString;
   end;
 
+  TJclAnsiStrAnsiStrSortedMapEntryArray = array of TJclAnsiStrAnsiStrSortedMapEntry;
+
   TJclAnsiStrAnsiStrSortedMap = class(TJclAnsiStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclAnsiStrContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclAnsiStrContainer,
     IJclAnsiStrAnsiStrMap, IJclAnsiStrAnsiStrSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -213,11 +242,18 @@ type
     function KeysCompare(const A, B: AnsiString): Integer;
     function ValuesCompare(const A, B: AnsiString): Integer;
   private
-    FEntries: array of TJclAnsiStrAnsiStrSortedEntry;
+    FEntries: TJclAnsiStrAnsiStrSortedMapEntryArray;
     function BinarySearch(const Key: AnsiString): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclAnsiStrAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclAnsiStrAnsiStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclAnsiStrAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclAnsiStrAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -246,13 +282,15 @@ type
     function TailMap(const FromKey: AnsiString): IJclAnsiStrAnsiStrSortedMap;
   end;
 
-  TJclWideStrIntfSortedEntry = record
+  TJclWideStrIntfSortedMapEntry = record
     Key: WideString;
     Value: IInterface;
   end;
 
+  TJclWideStrIntfSortedMapEntryArray = array of TJclWideStrIntfSortedMapEntry;
+
   TJclWideStrIntfSortedMap = class(TJclWideStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclWideStrContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclWideStrContainer, IJclIntfContainer,
     IJclWideStrIntfMap, IJclWideStrIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -261,11 +299,18 @@ type
     function KeysCompare(const A, B: WideString): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclWideStrIntfSortedEntry;
+    FEntries: TJclWideStrIntfSortedMapEntryArray;
     function BinarySearch(const Key: WideString): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclWideStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclWideStrIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclWideStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclWideStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -294,13 +339,15 @@ type
     function TailMap(const FromKey: WideString): IJclWideStrIntfSortedMap;
   end;
 
-  TJclIntfWideStrSortedEntry = record
+  TJclIntfWideStrSortedMapEntry = record
     Key: IInterface;
     Value: WideString;
   end;
 
+  TJclIntfWideStrSortedMapEntryArray = array of TJclIntfWideStrSortedMapEntry;
+
   TJclIntfWideStrSortedMap = class(TJclWideStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclWideStrContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclIntfContainer, IJclWideStrContainer,
     IJclIntfWideStrMap, IJclIntfWideStrSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -309,11 +356,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(const A, B: WideString): Integer;
   private
-    FEntries: array of TJclIntfWideStrSortedEntry;
+    FEntries: TJclIntfWideStrSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfWideStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -342,13 +396,15 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfWideStrSortedMap;
   end;
 
-  TJclWideStrWideStrSortedEntry = record
+  TJclWideStrWideStrSortedMapEntry = record
     Key: WideString;
     Value: WideString;
   end;
 
+  TJclWideStrWideStrSortedMapEntryArray = array of TJclWideStrWideStrSortedMapEntry;
+
   TJclWideStrWideStrSortedMap = class(TJclWideStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclWideStrContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclWideStrContainer,
     IJclWideStrWideStrMap, IJclWideStrWideStrSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -357,11 +413,18 @@ type
     function KeysCompare(const A, B: WideString): Integer;
     function ValuesCompare(const A, B: WideString): Integer;
   private
-    FEntries: array of TJclWideStrWideStrSortedEntry;
+    FEntries: TJclWideStrWideStrSortedMapEntryArray;
     function BinarySearch(const Key: WideString): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclWideStrWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclWideStrWideStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclWideStrWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclWideStrWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -391,15 +454,17 @@ type
   end;
 
   {$IFDEF SUPPORTS_UNICODE_STRING}
-  TJclUnicodeStrIntfSortedEntry = record
+  TJclUnicodeStrIntfSortedMapEntry = record
     Key: UnicodeString;
     Value: IInterface;
   end;
+
+  TJclUnicodeStrIntfSortedMapEntryArray = array of TJclUnicodeStrIntfSortedMapEntry;
   {$ENDIF SUPPORTS_UNICODE_STRING}
 
   {$IFDEF SUPPORTS_UNICODE_STRING}
   TJclUnicodeStrIntfSortedMap = class(TJclUnicodeStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclUnicodeStrContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclUnicodeStrContainer, IJclIntfContainer,
     IJclUnicodeStrIntfMap, IJclUnicodeStrIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -408,11 +473,18 @@ type
     function KeysCompare(const A, B: UnicodeString): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclUnicodeStrIntfSortedEntry;
+    FEntries: TJclUnicodeStrIntfSortedMapEntryArray;
     function BinarySearch(const Key: UnicodeString): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclUnicodeStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclUnicodeStrIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclUnicodeStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclUnicodeStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -443,15 +515,17 @@ type
   {$ENDIF SUPPORTS_UNICODE_STRING}
 
   {$IFDEF SUPPORTS_UNICODE_STRING}
-  TJclIntfUnicodeStrSortedEntry = record
+  TJclIntfUnicodeStrSortedMapEntry = record
     Key: IInterface;
     Value: UnicodeString;
   end;
+
+  TJclIntfUnicodeStrSortedMapEntryArray = array of TJclIntfUnicodeStrSortedMapEntry;
   {$ENDIF SUPPORTS_UNICODE_STRING}
 
   {$IFDEF SUPPORTS_UNICODE_STRING}
   TJclIntfUnicodeStrSortedMap = class(TJclUnicodeStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclUnicodeStrContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclIntfContainer, IJclUnicodeStrContainer,
     IJclIntfUnicodeStrMap, IJclIntfUnicodeStrSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -460,11 +534,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(const A, B: UnicodeString): Integer;
   private
-    FEntries: array of TJclIntfUnicodeStrSortedEntry;
+    FEntries: TJclIntfUnicodeStrSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfUnicodeStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -495,15 +576,17 @@ type
   {$ENDIF SUPPORTS_UNICODE_STRING}
 
   {$IFDEF SUPPORTS_UNICODE_STRING}
-  TJclUnicodeStrUnicodeStrSortedEntry = record
+  TJclUnicodeStrUnicodeStrSortedMapEntry = record
     Key: UnicodeString;
     Value: UnicodeString;
   end;
+
+  TJclUnicodeStrUnicodeStrSortedMapEntryArray = array of TJclUnicodeStrUnicodeStrSortedMapEntry;
   {$ENDIF SUPPORTS_UNICODE_STRING}
 
   {$IFDEF SUPPORTS_UNICODE_STRING}
   TJclUnicodeStrUnicodeStrSortedMap = class(TJclUnicodeStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclUnicodeStrContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclUnicodeStrContainer,
     IJclUnicodeStrUnicodeStrMap, IJclUnicodeStrUnicodeStrSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -512,11 +595,18 @@ type
     function KeysCompare(const A, B: UnicodeString): Integer;
     function ValuesCompare(const A, B: UnicodeString): Integer;
   private
-    FEntries: array of TJclUnicodeStrUnicodeStrSortedEntry;
+    FEntries: TJclUnicodeStrUnicodeStrSortedMapEntryArray;
     function BinarySearch(const Key: UnicodeString): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclUnicodeStrUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclUnicodeStrUnicodeStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclUnicodeStrUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclUnicodeStrUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -547,13 +637,13 @@ type
   {$ENDIF SUPPORTS_UNICODE_STRING}
 
   {$IFDEF CONTAINER_ANSISTR}
-  TJclStrIntfSortedEntry = TJclAnsiStrIntfSortedEntry;
+  TJclStrIntfSortedMapEntry = TJclAnsiStrIntfSortedMapEntry;
   {$ENDIF CONTAINER_ANSISTR}
   {$IFDEF CONTAINER_WIDESTR}
-  TJclStrIntfSortedEntry = TJclWideStrIntfSortedEntry;
+  TJclStrIntfSortedMapEntry = TJclWideStrIntfSortedMapEntry;
   {$ENDIF CONTAINER_WIDESTR}
   {$IFDEF CONTAINER_UNICODESTR}
-  TJclStrIntfSortedEntry = TJclUnicodeStrIntfSortedEntry;
+  TJclStrIntfSortedMapEntry = TJclUnicodeStrIntfSortedMapEntry;
   {$ENDIF CONTAINER_UNICODESTR}
 
   {$IFDEF CONTAINER_ANSISTR}
@@ -567,13 +657,13 @@ type
   {$ENDIF CONTAINER_UNICODESTR}
 
   {$IFDEF CONTAINER_ANSISTR}
-  TJclIntfStrSortedEntry = TJclIntfAnsiStrSortedEntry;
+  TJclIntfStrSortedMapEntry = TJclIntfAnsiStrSortedMapEntry;
   {$ENDIF CONTAINER_ANSISTR}
   {$IFDEF CONTAINER_WIDESTR}
-  TJclIntfStrSortedEntry = TJclIntfWideStrSortedEntry;
+  TJclIntfStrSortedMapEntry = TJclIntfWideStrSortedMapEntry;
   {$ENDIF CONTAINER_WIDESTR}
   {$IFDEF CONTAINER_UNICODESTR}
-  TJclIntfStrSortedEntry = TJclIntfUnicodeStrSortedEntry;
+  TJclIntfStrSortedMapEntry = TJclIntfUnicodeStrSortedMapEntry;
   {$ENDIF CONTAINER_UNICODESTR}
 
   {$IFDEF CONTAINER_ANSISTR}
@@ -587,13 +677,13 @@ type
   {$ENDIF CONTAINER_UNICODESTR}
 
   {$IFDEF CONTAINER_ANSISTR}
-  TJclStrStrSortedEntry = TJclAnsiStrAnsiStrSortedEntry;
+  TJclStrStrSortedMapEntry = TJclAnsiStrAnsiStrSortedMapEntry;
   {$ENDIF CONTAINER_ANSISTR}
   {$IFDEF CONTAINER_WIDESTR}
-  TJclStrStrSortedEntry = TJclWideStrWideStrSortedEntry;
+  TJclStrStrSortedMapEntry = TJclWideStrWideStrSortedMapEntry;
   {$ENDIF CONTAINER_WIDESTR}
   {$IFDEF CONTAINER_UNICODESTR}
-  TJclStrStrSortedEntry = TJclUnicodeStrUnicodeStrSortedEntry;
+  TJclStrStrSortedMapEntry = TJclUnicodeStrUnicodeStrSortedMapEntry;
   {$ENDIF CONTAINER_UNICODESTR}
 
   {$IFDEF CONTAINER_ANSISTR}
@@ -606,13 +696,15 @@ type
   TJclStrStrSortedMap = TJclUnicodeStrUnicodeStrSortedMap;
   {$ENDIF CONTAINER_UNICODESTR}
 
-  TJclSingleIntfSortedEntry = record
+  TJclSingleIntfSortedMapEntry = record
     Key: Single;
     Value: IInterface;
   end;
 
+  TJclSingleIntfSortedMapEntryArray = array of TJclSingleIntfSortedMapEntry;
+
   TJclSingleIntfSortedMap = class(TJclSingleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclSingleContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclSingleContainer, IJclIntfContainer,
     IJclSingleIntfMap, IJclSingleIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -621,11 +713,18 @@ type
     function KeysCompare(const A, B: Single): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclSingleIntfSortedEntry;
+    FEntries: TJclSingleIntfSortedMapEntryArray;
     function BinarySearch(const Key: Single): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclSingleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclSingleIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclSingleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclSingleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -654,13 +753,15 @@ type
     function TailMap(const FromKey: Single): IJclSingleIntfSortedMap;
   end;
 
-  TJclIntfSingleSortedEntry = record
+  TJclIntfSingleSortedMapEntry = record
     Key: IInterface;
     Value: Single;
   end;
 
+  TJclIntfSingleSortedMapEntryArray = array of TJclIntfSingleSortedMapEntry;
+
   TJclIntfSingleSortedMap = class(TJclSingleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclSingleContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntfContainer, IJclSingleContainer,
     IJclIntfSingleMap, IJclIntfSingleSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -669,11 +770,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(const A, B: Single): Integer;
   private
-    FEntries: array of TJclIntfSingleSortedEntry;
+    FEntries: TJclIntfSingleSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfSingleSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -702,10 +810,12 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfSingleSortedMap;
   end;
 
-  TJclSingleSingleSortedEntry = record
+  TJclSingleSingleSortedMapEntry = record
     Key: Single;
     Value: Single;
   end;
+
+  TJclSingleSingleSortedMapEntryArray = array of TJclSingleSingleSortedMapEntry;
 
   TJclSingleSingleSortedMap = class(TJclSingleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
     IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclSingleContainer,
@@ -717,11 +827,13 @@ type
     function KeysCompare(const A, B: Single): Integer;
     function ValuesCompare(const A, B: Single): Integer;
   private
-    FEntries: array of TJclSingleSingleSortedEntry;
+    FEntries: TJclSingleSingleSortedMapEntryArray;
     function BinarySearch(const Key: Single): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclSingleSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclSingleSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -750,13 +862,15 @@ type
     function TailMap(const FromKey: Single): IJclSingleSingleSortedMap;
   end;
 
-  TJclDoubleIntfSortedEntry = record
+  TJclDoubleIntfSortedMapEntry = record
     Key: Double;
     Value: IInterface;
   end;
 
+  TJclDoubleIntfSortedMapEntryArray = array of TJclDoubleIntfSortedMapEntry;
+
   TJclDoubleIntfSortedMap = class(TJclDoubleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclDoubleContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclDoubleContainer, IJclIntfContainer,
     IJclDoubleIntfMap, IJclDoubleIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -765,11 +879,18 @@ type
     function KeysCompare(const A, B: Double): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclDoubleIntfSortedEntry;
+    FEntries: TJclDoubleIntfSortedMapEntryArray;
     function BinarySearch(const Key: Double): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclDoubleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclDoubleIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclDoubleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclDoubleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -798,13 +919,15 @@ type
     function TailMap(const FromKey: Double): IJclDoubleIntfSortedMap;
   end;
 
-  TJclIntfDoubleSortedEntry = record
+  TJclIntfDoubleSortedMapEntry = record
     Key: IInterface;
     Value: Double;
   end;
 
+  TJclIntfDoubleSortedMapEntryArray = array of TJclIntfDoubleSortedMapEntry;
+
   TJclIntfDoubleSortedMap = class(TJclDoubleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclDoubleContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntfContainer, IJclDoubleContainer,
     IJclIntfDoubleMap, IJclIntfDoubleSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -813,11 +936,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(const A, B: Double): Integer;
   private
-    FEntries: array of TJclIntfDoubleSortedEntry;
+    FEntries: TJclIntfDoubleSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfDoubleSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -846,10 +976,12 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfDoubleSortedMap;
   end;
 
-  TJclDoubleDoubleSortedEntry = record
+  TJclDoubleDoubleSortedMapEntry = record
     Key: Double;
     Value: Double;
   end;
+
+  TJclDoubleDoubleSortedMapEntryArray = array of TJclDoubleDoubleSortedMapEntry;
 
   TJclDoubleDoubleSortedMap = class(TJclDoubleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
     IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclDoubleContainer,
@@ -861,11 +993,13 @@ type
     function KeysCompare(const A, B: Double): Integer;
     function ValuesCompare(const A, B: Double): Integer;
   private
-    FEntries: array of TJclDoubleDoubleSortedEntry;
+    FEntries: TJclDoubleDoubleSortedMapEntryArray;
     function BinarySearch(const Key: Double): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclDoubleDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclDoubleDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -894,13 +1028,15 @@ type
     function TailMap(const FromKey: Double): IJclDoubleDoubleSortedMap;
   end;
 
-  TJclExtendedIntfSortedEntry = record
+  TJclExtendedIntfSortedMapEntry = record
     Key: Extended;
     Value: IInterface;
   end;
 
+  TJclExtendedIntfSortedMapEntryArray = array of TJclExtendedIntfSortedMapEntry;
+
   TJclExtendedIntfSortedMap = class(TJclExtendedAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclExtendedContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclExtendedContainer, IJclIntfContainer,
     IJclExtendedIntfMap, IJclExtendedIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -909,11 +1045,18 @@ type
     function KeysCompare(const A, B: Extended): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclExtendedIntfSortedEntry;
+    FEntries: TJclExtendedIntfSortedMapEntryArray;
     function BinarySearch(const Key: Extended): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclExtendedIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclExtendedIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclExtendedIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclExtendedIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -942,13 +1085,15 @@ type
     function TailMap(const FromKey: Extended): IJclExtendedIntfSortedMap;
   end;
 
-  TJclIntfExtendedSortedEntry = record
+  TJclIntfExtendedSortedMapEntry = record
     Key: IInterface;
     Value: Extended;
   end;
 
+  TJclIntfExtendedSortedMapEntryArray = array of TJclIntfExtendedSortedMapEntry;
+
   TJclIntfExtendedSortedMap = class(TJclExtendedAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclExtendedContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntfContainer, IJclExtendedContainer,
     IJclIntfExtendedMap, IJclIntfExtendedSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -957,11 +1102,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(const A, B: Extended): Integer;
   private
-    FEntries: array of TJclIntfExtendedSortedEntry;
+    FEntries: TJclIntfExtendedSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfExtendedSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -990,10 +1142,12 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfExtendedSortedMap;
   end;
 
-  TJclExtendedExtendedSortedEntry = record
+  TJclExtendedExtendedSortedMapEntry = record
     Key: Extended;
     Value: Extended;
   end;
+
+  TJclExtendedExtendedSortedMapEntryArray = array of TJclExtendedExtendedSortedMapEntry;
 
   TJclExtendedExtendedSortedMap = class(TJclExtendedAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
     IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclExtendedContainer,
@@ -1005,11 +1159,13 @@ type
     function KeysCompare(const A, B: Extended): Integer;
     function ValuesCompare(const A, B: Extended): Integer;
   private
-    FEntries: array of TJclExtendedExtendedSortedEntry;
+    FEntries: TJclExtendedExtendedSortedMapEntryArray;
     function BinarySearch(const Key: Extended): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclExtendedExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclExtendedExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1039,13 +1195,13 @@ type
   end;
 
   {$IFDEF MATH_SINGLE_PRECISION}
-  TJclFloatIntfSortedEntry = TJclSingleIntfSortedEntry;
+  TJclFloatIntfSortedMapEntry = TJclSingleIntfSortedMapEntry;
   {$ENDIF MATH_SINGLE_PRECISION}
   {$IFDEF MATH_DOUBLE_PRECISION}
-  TJclFloatIntfSortedEntry = TJclDoubleIntfSortedEntry;
+  TJclFloatIntfSortedMapEntry = TJclDoubleIntfSortedMapEntry;
   {$ENDIF MATH_DOUBLE_PRECISION}
   {$IFDEF MATH_EXTENDED_PRECISION}
-  TJclFloatIntfSortedEntry = TJclExtendedIntfSortedEntry;
+  TJclFloatIntfSortedMapEntry = TJclExtendedIntfSortedMapEntry;
   {$ENDIF MATH_EXTENDED_PRECISION}
 
   {$IFDEF MATH_SINGLE_PRECISION}
@@ -1059,13 +1215,13 @@ type
   {$ENDIF MATH_EXTENDED_PRECISION}
 
   {$IFDEF MATH_SINGLE_PRECISION}
-  TJclIntfFloatSortedEntry = TJclIntfSingleSortedEntry;
+  TJclIntfFloatSortedMapEntry = TJclIntfSingleSortedMapEntry;
   {$ENDIF MATH_SINGLE_PRECISION}
   {$IFDEF MATH_DOUBLE_PRECISION}
-  TJclIntfFloatSortedEntry = TJclIntfDoubleSortedEntry;
+  TJclIntfFloatSortedMapEntry = TJclIntfDoubleSortedMapEntry;
   {$ENDIF MATH_DOUBLE_PRECISION}
   {$IFDEF MATH_EXTENDED_PRECISION}
-  TJclIntfFloatSortedEntry = TJclIntfExtendedSortedEntry;
+  TJclIntfFloatSortedMapEntry = TJclIntfExtendedSortedMapEntry;
   {$ENDIF MATH_EXTENDED_PRECISION}
 
   {$IFDEF MATH_SINGLE_PRECISION}
@@ -1079,13 +1235,13 @@ type
   {$ENDIF MATH_EXTENDED_PRECISION}
 
   {$IFDEF MATH_SINGLE_PRECISION}
-  TJclFloatFloatSortedEntry = TJclSingleSingleSortedEntry;
+  TJclFloatFloatSortedMapEntry = TJclSingleSingleSortedMapEntry;
   {$ENDIF MATH_SINGLE_PRECISION}
   {$IFDEF MATH_DOUBLE_PRECISION}
-  TJclFloatFloatSortedEntry = TJclDoubleDoubleSortedEntry;
+  TJclFloatFloatSortedMapEntry = TJclDoubleDoubleSortedMapEntry;
   {$ENDIF MATH_DOUBLE_PRECISION}
   {$IFDEF MATH_EXTENDED_PRECISION}
-  TJclFloatFloatSortedEntry = TJclExtendedExtendedSortedEntry;
+  TJclFloatFloatSortedMapEntry = TJclExtendedExtendedSortedMapEntry;
   {$ENDIF MATH_EXTENDED_PRECISION}
 
   {$IFDEF MATH_SINGLE_PRECISION}
@@ -1098,13 +1254,15 @@ type
   TJclFloatFloatSortedMap = TJclExtendedExtendedSortedMap;
   {$ENDIF MATH_EXTENDED_PRECISION}
 
-  TJclIntegerIntfSortedEntry = record
+  TJclIntegerIntfSortedMapEntry = record
     Key: Integer;
     Value: IInterface;
   end;
 
+  TJclIntegerIntfSortedMapEntryArray = array of TJclIntegerIntfSortedMapEntry;
+
   TJclIntegerIntfSortedMap = class(TJclIntegerAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntegerContainer, IJclIntfContainer,
     IJclIntegerIntfMap, IJclIntegerIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1113,11 +1271,18 @@ type
     function KeysCompare(A, B: Integer): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclIntegerIntfSortedEntry;
+    FEntries: TJclIntegerIntfSortedMapEntryArray;
     function BinarySearch(Key: Integer): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntegerIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntegerIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntegerIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntegerIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1146,13 +1311,15 @@ type
     function TailMap(FromKey: Integer): IJclIntegerIntfSortedMap;
   end;
 
-  TJclIntfIntegerSortedEntry = record
+  TJclIntfIntegerSortedMapEntry = record
     Key: IInterface;
     Value: Integer;
   end;
 
+  TJclIntfIntegerSortedMapEntryArray = array of TJclIntfIntegerSortedMapEntry;
+
   TJclIntfIntegerSortedMap = class(TJclIntegerAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntfContainer, IJclIntegerContainer,
     IJclIntfIntegerMap, IJclIntfIntegerSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1161,11 +1328,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(A, B: Integer): Integer;
   private
-    FEntries: array of TJclIntfIntegerSortedEntry;
+    FEntries: TJclIntfIntegerSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfIntegerSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1194,13 +1368,15 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfIntegerSortedMap;
   end;
 
-  TJclIntegerIntegerSortedEntry = record
+  TJclIntegerIntegerSortedMapEntry = record
     Key: Integer;
     Value: Integer;
   end;
 
+  TJclIntegerIntegerSortedMapEntryArray = array of TJclIntegerIntegerSortedMapEntry;
+
   TJclIntegerIntegerSortedMap = class(TJclIntegerAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntegerContainer,
     IJclIntegerIntegerMap, IJclIntegerIntegerSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1209,11 +1385,13 @@ type
     function KeysCompare(A, B: Integer): Integer;
     function ValuesCompare(A, B: Integer): Integer;
   private
-    FEntries: array of TJclIntegerIntegerSortedEntry;
+    FEntries: TJclIntegerIntegerSortedMapEntryArray;
     function BinarySearch(Key: Integer): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclIntegerIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclIntegerIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1242,13 +1420,15 @@ type
     function TailMap(FromKey: Integer): IJclIntegerIntegerSortedMap;
   end;
 
-  TJclCardinalIntfSortedEntry = record
+  TJclCardinalIntfSortedMapEntry = record
     Key: Cardinal;
     Value: IInterface;
   end;
 
+  TJclCardinalIntfSortedMapEntryArray = array of TJclCardinalIntfSortedMapEntry;
+
   TJclCardinalIntfSortedMap = class(TJclCardinalAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclCardinalContainer, IJclIntfContainer,
     IJclCardinalIntfMap, IJclCardinalIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1257,11 +1437,18 @@ type
     function KeysCompare(A, B: Cardinal): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclCardinalIntfSortedEntry;
+    FEntries: TJclCardinalIntfSortedMapEntryArray;
     function BinarySearch(Key: Cardinal): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclCardinalIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclCardinalIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclCardinalIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclCardinalIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1290,13 +1477,15 @@ type
     function TailMap(FromKey: Cardinal): IJclCardinalIntfSortedMap;
   end;
 
-  TJclIntfCardinalSortedEntry = record
+  TJclIntfCardinalSortedMapEntry = record
     Key: IInterface;
     Value: Cardinal;
   end;
 
+  TJclIntfCardinalSortedMapEntryArray = array of TJclIntfCardinalSortedMapEntry;
+
   TJclIntfCardinalSortedMap = class(TJclCardinalAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntfContainer, IJclCardinalContainer,
     IJclIntfCardinalMap, IJclIntfCardinalSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1305,11 +1494,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(A, B: Cardinal): Integer;
   private
-    FEntries: array of TJclIntfCardinalSortedEntry;
+    FEntries: TJclIntfCardinalSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfCardinalSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1338,13 +1534,15 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfCardinalSortedMap;
   end;
 
-  TJclCardinalCardinalSortedEntry = record
+  TJclCardinalCardinalSortedMapEntry = record
     Key: Cardinal;
     Value: Cardinal;
   end;
 
+  TJclCardinalCardinalSortedMapEntryArray = array of TJclCardinalCardinalSortedMapEntry;
+
   TJclCardinalCardinalSortedMap = class(TJclCardinalAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclCardinalContainer,
     IJclCardinalCardinalMap, IJclCardinalCardinalSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1353,11 +1551,13 @@ type
     function KeysCompare(A, B: Cardinal): Integer;
     function ValuesCompare(A, B: Cardinal): Integer;
   private
-    FEntries: array of TJclCardinalCardinalSortedEntry;
+    FEntries: TJclCardinalCardinalSortedMapEntryArray;
     function BinarySearch(Key: Cardinal): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclCardinalCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclCardinalCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1386,13 +1586,15 @@ type
     function TailMap(FromKey: Cardinal): IJclCardinalCardinalSortedMap;
   end;
 
-  TJclInt64IntfSortedEntry = record
+  TJclInt64IntfSortedMapEntry = record
     Key: Int64;
     Value: IInterface;
   end;
 
+  TJclInt64IntfSortedMapEntryArray = array of TJclInt64IntfSortedMapEntry;
+
   TJclInt64IntfSortedMap = class(TJclInt64AbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclInt64Container, IJclIntfContainer,
     IJclInt64IntfMap, IJclInt64IntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1401,11 +1603,18 @@ type
     function KeysCompare(const A, B: Int64): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclInt64IntfSortedEntry;
+    FEntries: TJclInt64IntfSortedMapEntryArray;
     function BinarySearch(const Key: Int64): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclInt64IntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclInt64IntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclInt64IntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclInt64IntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1434,13 +1643,15 @@ type
     function TailMap(const FromKey: Int64): IJclInt64IntfSortedMap;
   end;
 
-  TJclIntfInt64SortedEntry = record
+  TJclIntfInt64SortedMapEntry = record
     Key: IInterface;
     Value: Int64;
   end;
 
+  TJclIntfInt64SortedMapEntryArray = array of TJclIntfInt64SortedMapEntry;
+
   TJclIntfInt64SortedMap = class(TJclInt64AbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntfContainer, IJclInt64Container,
     IJclIntfInt64Map, IJclIntfInt64SortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1449,11 +1660,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(const A, B: Int64): Integer;
   private
-    FEntries: array of TJclIntfInt64SortedEntry;
+    FEntries: TJclIntfInt64SortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfInt64SortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1482,13 +1700,15 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfInt64SortedMap;
   end;
 
-  TJclInt64Int64SortedEntry = record
+  TJclInt64Int64SortedMapEntry = record
     Key: Int64;
     Value: Int64;
   end;
 
+  TJclInt64Int64SortedMapEntryArray = array of TJclInt64Int64SortedMapEntry;
+
   TJclInt64Int64SortedMap = class(TJclInt64AbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclInt64Container,
     IJclInt64Int64Map, IJclInt64Int64SortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1497,11 +1717,13 @@ type
     function KeysCompare(const A, B: Int64): Integer;
     function ValuesCompare(const A, B: Int64): Integer;
   private
-    FEntries: array of TJclInt64Int64SortedEntry;
+    FEntries: TJclInt64Int64SortedMapEntryArray;
     function BinarySearch(const Key: Int64): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclInt64Int64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclInt64Int64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1530,13 +1752,15 @@ type
     function TailMap(const FromKey: Int64): IJclInt64Int64SortedMap;
   end;
 
-  TJclPtrIntfSortedEntry = record
+  TJclPtrIntfSortedMapEntry = record
     Key: Pointer;
     Value: IInterface;
   end;
 
+  TJclPtrIntfSortedMapEntryArray = array of TJclPtrIntfSortedMapEntry;
+
   TJclPtrIntfSortedMap = class(TJclPtrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclPtrContainer, IJclIntfContainer,
     IJclPtrIntfMap, IJclPtrIntfSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1545,11 +1769,18 @@ type
     function KeysCompare(A, B: Pointer): Integer;
     function ValuesCompare(const A, B: IInterface): Integer;
   private
-    FEntries: array of TJclPtrIntfSortedEntry;
+    FEntries: TJclPtrIntfSortedMapEntryArray;
     function BinarySearch(Key: Pointer): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclPtrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclPtrIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclPtrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclPtrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1578,13 +1809,15 @@ type
     function TailMap(FromKey: Pointer): IJclPtrIntfSortedMap;
   end;
 
-  TJclIntfPtrSortedEntry = record
+  TJclIntfPtrSortedMapEntry = record
     Key: IInterface;
     Value: Pointer;
   end;
 
+  TJclIntfPtrSortedMapEntryArray = array of TJclIntfPtrSortedMapEntry;
+
   TJclIntfPtrSortedMap = class(TJclPtrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntfContainer, IJclPtrContainer,
     IJclIntfPtrMap, IJclIntfPtrSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1593,11 +1826,18 @@ type
     function KeysCompare(const A, B: IInterface): Integer;
     function ValuesCompare(A, B: Pointer): Integer;
   private
-    FEntries: array of TJclIntfPtrSortedEntry;
+    FEntries: TJclIntfPtrSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfPtrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1626,13 +1866,15 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfPtrSortedMap;
   end;
 
-  TJclPtrPtrSortedEntry = record
+  TJclPtrPtrSortedMapEntry = record
     Key: Pointer;
     Value: Pointer;
   end;
 
+  TJclPtrPtrSortedMapEntryArray = array of TJclPtrPtrSortedMapEntry;
+
   TJclPtrPtrSortedMap = class(TJclPtrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclPtrContainer,
     IJclPtrPtrMap, IJclPtrPtrSortedMap)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1641,11 +1883,13 @@ type
     function KeysCompare(A, B: Pointer): Integer;
     function ValuesCompare(A, B: Pointer): Integer;
   private
-    FEntries: array of TJclPtrPtrSortedEntry;
+    FEntries: TJclPtrPtrSortedMapEntryArray;
     function BinarySearch(Key: Pointer): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclPtrPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclPtrPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer);
     destructor Destroy; override;
@@ -1674,13 +1918,15 @@ type
     function TailMap(FromKey: Pointer): IJclPtrPtrSortedMap;
   end;
 
-  TJclIntfSortedEntry = record
+  TJclIntfSortedMapEntry = record
     Key: IInterface;
     Value: TObject;
   end;
 
+  TJclIntfSortedMapEntryArray = array of TJclIntfSortedMapEntry;
+
   TJclIntfSortedMap = class(TJclIntfAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntfContainer, IJclContainer, IJclValueOwner,
     IJclIntfMap, IJclIntfSortedMap)
   private
     FOwnsValues: Boolean;
@@ -1695,11 +1941,18 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclIntfSortedEntry;
+    FEntries: TJclIntfSortedMapEntryArray;
     function BinarySearch(const Key: IInterface): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -1728,13 +1981,15 @@ type
     function TailMap(const FromKey: IInterface): IJclIntfSortedMap;
   end;
 
-  TJclAnsiStrSortedEntry = record
+  TJclAnsiStrSortedMapEntry = record
     Key: AnsiString;
     Value: TObject;
   end;
 
+  TJclAnsiStrSortedMapEntryArray = array of TJclAnsiStrSortedMapEntry;
+
   TJclAnsiStrSortedMap = class(TJclAnsiStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclAnsiStrContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclAnsiStrContainer, IJclContainer, IJclValueOwner,
     IJclAnsiStrMap, IJclAnsiStrSortedMap)
   private
     FOwnsValues: Boolean;
@@ -1749,11 +2004,18 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclAnsiStrSortedEntry;
+    FEntries: TJclAnsiStrSortedMapEntryArray;
     function BinarySearch(const Key: AnsiString): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclAnsiStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -1782,13 +2044,15 @@ type
     function TailMap(const FromKey: AnsiString): IJclAnsiStrSortedMap;
   end;
 
-  TJclWideStrSortedEntry = record
+  TJclWideStrSortedMapEntry = record
     Key: WideString;
     Value: TObject;
   end;
 
+  TJclWideStrSortedMapEntryArray = array of TJclWideStrSortedMapEntry;
+
   TJclWideStrSortedMap = class(TJclWideStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclWideStrContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclWideStrContainer, IJclContainer, IJclValueOwner,
     IJclWideStrMap, IJclWideStrSortedMap)
   private
     FOwnsValues: Boolean;
@@ -1803,11 +2067,18 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclWideStrSortedEntry;
+    FEntries: TJclWideStrSortedMapEntryArray;
     function BinarySearch(const Key: WideString): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclWideStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -1837,15 +2108,17 @@ type
   end;
 
   {$IFDEF SUPPORTS_UNICODE_STRING}
-  TJclUnicodeStrSortedEntry = record
+  TJclUnicodeStrSortedMapEntry = record
     Key: UnicodeString;
     Value: TObject;
   end;
+
+  TJclUnicodeStrSortedMapEntryArray = array of TJclUnicodeStrSortedMapEntry;
   {$ENDIF SUPPORTS_UNICODE_STRING}
 
   {$IFDEF SUPPORTS_UNICODE_STRING}
   TJclUnicodeStrSortedMap = class(TJclUnicodeStrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrContainer, IJclUnicodeStrContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclStrBaseContainer, IJclUnicodeStrContainer, IJclContainer, IJclValueOwner,
     IJclUnicodeStrMap, IJclUnicodeStrSortedMap)
   private
     FOwnsValues: Boolean;
@@ -1860,11 +2133,18 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclUnicodeStrSortedEntry;
+    FEntries: TJclUnicodeStrSortedMapEntryArray;
     function BinarySearch(const Key: UnicodeString): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure FinalizeArrayBeforeMove(var List: TJclUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArray(var List: TJclUnicodeStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure InitializeArrayAfterMove(var List: TJclUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+
+    procedure MoveArray(var List: TJclUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -1895,13 +2175,13 @@ type
   {$ENDIF SUPPORTS_UNICODE_STRING}
 
   {$IFDEF CONTAINER_ANSISTR}
-  TJclStrSortedEntry = TJclAnsiStrSortedEntry;
+  TJclStrSortedMapEntry = TJclAnsiStrSortedMapEntry;
   {$ENDIF CONTAINER_ANSISTR}
   {$IFDEF CONTAINER_WIDESTR}
-  TJclStrSortedEntry = TJclWideStrSortedEntry;
+  TJclStrSortedMapEntry = TJclWideStrSortedMapEntry;
   {$ENDIF CONTAINER_WIDESTR}
   {$IFDEF CONTAINER_UNICODESTR}
-  TJclStrSortedEntry = TJclUnicodeStrSortedEntry;
+  TJclStrSortedMapEntry = TJclUnicodeStrSortedMapEntry;
   {$ENDIF CONTAINER_UNICODESTR}
 
   {$IFDEF CONTAINER_ANSISTR}
@@ -1914,13 +2194,15 @@ type
   TJclStrSortedMap = TJclUnicodeStrSortedMap;
   {$ENDIF CONTAINER_UNICODESTR}
 
-  TJclSingleSortedEntry = record
+  TJclSingleSortedMapEntry = record
     Key: Single;
     Value: TObject;
   end;
 
+  TJclSingleSortedMapEntryArray = array of TJclSingleSortedMapEntry;
+
   TJclSingleSortedMap = class(TJclSingleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclSingleContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclSingleContainer, IJclContainer, IJclValueOwner,
     IJclSingleMap, IJclSingleSortedMap)
   private
     FOwnsValues: Boolean;
@@ -1935,11 +2217,13 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclSingleSortedEntry;
+    FEntries: TJclSingleSortedMapEntryArray;
     function BinarySearch(const Key: Single): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -1968,13 +2252,15 @@ type
     function TailMap(const FromKey: Single): IJclSingleSortedMap;
   end;
 
-  TJclDoubleSortedEntry = record
+  TJclDoubleSortedMapEntry = record
     Key: Double;
     Value: TObject;
   end;
 
+  TJclDoubleSortedMapEntryArray = array of TJclDoubleSortedMapEntry;
+
   TJclDoubleSortedMap = class(TJclDoubleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclDoubleContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclDoubleContainer, IJclContainer, IJclValueOwner,
     IJclDoubleMap, IJclDoubleSortedMap)
   private
     FOwnsValues: Boolean;
@@ -1989,11 +2275,13 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclDoubleSortedEntry;
+    FEntries: TJclDoubleSortedMapEntryArray;
     function BinarySearch(const Key: Double): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -2022,13 +2310,15 @@ type
     function TailMap(const FromKey: Double): IJclDoubleSortedMap;
   end;
 
-  TJclExtendedSortedEntry = record
+  TJclExtendedSortedMapEntry = record
     Key: Extended;
     Value: TObject;
   end;
 
+  TJclExtendedSortedMapEntryArray = array of TJclExtendedSortedMapEntry;
+
   TJclExtendedSortedMap = class(TJclExtendedAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclExtendedContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclExtendedContainer, IJclContainer, IJclValueOwner,
     IJclExtendedMap, IJclExtendedSortedMap)
   private
     FOwnsValues: Boolean;
@@ -2043,11 +2333,13 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclExtendedSortedEntry;
+    FEntries: TJclExtendedSortedMapEntryArray;
     function BinarySearch(const Key: Extended): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -2077,13 +2369,13 @@ type
   end;
 
   {$IFDEF MATH_SINGLE_PRECISION}
-  TJclFloatSortedEntry = TJclSingleSortedEntry;
+  TJclFloatSortedMapEntry = TJclSingleSortedMapEntry;
   {$ENDIF MATH_SINGLE_PRECISION}
   {$IFDEF MATH_DOUBLE_PRECISION}
-  TJclFloatSortedEntry = TJclDoubleSortedEntry;
+  TJclFloatSortedMapEntry = TJclDoubleSortedMapEntry;
   {$ENDIF MATH_DOUBLE_PRECISION}
   {$IFDEF MATH_EXTENDED_PRECISION}
-  TJclFloatSortedEntry = TJclExtendedSortedEntry;
+  TJclFloatSortedMapEntry = TJclExtendedSortedMapEntry;
   {$ENDIF MATH_EXTENDED_PRECISION}
 
   {$IFDEF MATH_SINGLE_PRECISION}
@@ -2096,13 +2388,15 @@ type
   TJclFloatSortedMap = TJclExtendedSortedMap;
   {$ENDIF MATH_EXTENDED_PRECISION}
 
-  TJclIntegerSortedEntry = record
+  TJclIntegerSortedMapEntry = record
     Key: Integer;
     Value: TObject;
   end;
 
+  TJclIntegerSortedMapEntryArray = array of TJclIntegerSortedMapEntry;
+
   TJclIntegerSortedMap = class(TJclIntegerAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclIntegerContainer, IJclContainer, IJclValueOwner,
     IJclIntegerMap, IJclIntegerSortedMap)
   private
     FOwnsValues: Boolean;
@@ -2117,11 +2411,13 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclIntegerSortedEntry;
+    FEntries: TJclIntegerSortedMapEntryArray;
     function BinarySearch(Key: Integer): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -2150,13 +2446,15 @@ type
     function TailMap(FromKey: Integer): IJclIntegerSortedMap;
   end;
 
-  TJclCardinalSortedEntry = record
+  TJclCardinalSortedMapEntry = record
     Key: Cardinal;
     Value: TObject;
   end;
 
+  TJclCardinalSortedMapEntryArray = array of TJclCardinalSortedMapEntry;
+
   TJclCardinalSortedMap = class(TJclCardinalAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclCardinalContainer, IJclContainer, IJclValueOwner,
     IJclCardinalMap, IJclCardinalSortedMap)
   private
     FOwnsValues: Boolean;
@@ -2171,11 +2469,13 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclCardinalSortedEntry;
+    FEntries: TJclCardinalSortedMapEntryArray;
     function BinarySearch(Key: Cardinal): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -2204,13 +2504,15 @@ type
     function TailMap(FromKey: Cardinal): IJclCardinalSortedMap;
   end;
 
-  TJclInt64SortedEntry = record
+  TJclInt64SortedMapEntry = record
     Key: Int64;
     Value: TObject;
   end;
 
+  TJclInt64SortedMapEntryArray = array of TJclInt64SortedMapEntry;
+
   TJclInt64SortedMap = class(TJclInt64AbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclInt64Container, IJclContainer, IJclValueOwner,
     IJclInt64Map, IJclInt64SortedMap)
   private
     FOwnsValues: Boolean;
@@ -2225,11 +2527,13 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclInt64SortedEntry;
+    FEntries: TJclInt64SortedMapEntryArray;
     function BinarySearch(const Key: Int64): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -2258,13 +2562,15 @@ type
     function TailMap(const FromKey: Int64): IJclInt64SortedMap;
   end;
 
-  TJclPtrSortedEntry = record
+  TJclPtrSortedMapEntry = record
     Key: Pointer;
     Value: TObject;
   end;
 
+  TJclPtrSortedMapEntryArray = array of TJclPtrSortedMapEntry;
+
   TJclPtrSortedMap = class(TJclPtrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclPtrContainer, IJclContainer, IJclValueOwner,
     IJclPtrMap, IJclPtrSortedMap)
   private
     FOwnsValues: Boolean;
@@ -2279,11 +2585,13 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclPtrSortedEntry;
+    FEntries: TJclPtrSortedMapEntryArray;
     function BinarySearch(Key: Pointer): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean);
     destructor Destroy; override;
@@ -2312,13 +2620,15 @@ type
     function TailMap(FromKey: Pointer): IJclPtrSortedMap;
   end;
 
-  TJclSortedEntry = record
+  TJclSortedMapEntry = record
     Key: TObject;
     Value: TObject;
   end;
 
+  TJclSortedMapEntryArray = array of TJclSortedMapEntry;
+
   TJclSortedMap = class(TJclAbstractContainerBase, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclKeyOwner, IJclValueOwner,
+    IJclIntfCloneable, IJclCloneable, IJclGrowable, IJclPackable, IJclBaseContainer, IJclContainer, IJclKeyOwner, IJclValueOwner,
     IJclMap, IJclSortedMap)
   private
     FOwnsKeys: Boolean;
@@ -2337,11 +2647,13 @@ type
     function GetOwnsValues: Boolean;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TJclSortedEntry;
+    FEntries: TJclSortedMapEntryArray;
     function BinarySearch(Key: TObject): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure InitializeArrayAfterMove(var List: TJclSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+      {$IFDEF SUPPORTS_INLINE} inline; {$ENDIF}
+    procedure MoveArray(var List: TJclSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean; AOwnsKeys: Boolean);
     destructor Destroy; override;
@@ -2386,6 +2698,7 @@ type
   protected
     type
       TSortedEntry = TJclSortedEntry<TKey,TValue>;
+      TSortedEntryArray = array of TSortedEntry;
   private
     FOwnsKeys: Boolean;
     FOwnsValues: Boolean;
@@ -2403,11 +2716,11 @@ type
     property OwnsKeys: Boolean read FOwnsKeys;
     property OwnsValues: Boolean read FOwnsValues;
   private
-    FEntries: array of TSortedEntry;
+    FEntries: TSortedEntryArray;
     function BinarySearch(const Key: TKey): Integer;
   protected
     procedure AssignDataTo(Dest: TJclAbstractContainerBase); override;
-    procedure MoveArray(FromIndex, ToIndex, Count: Integer);
+    procedure MoveArray(var List: TSortedEntryArray; FromIndex, ToIndex, Count: SizeInt);
   public
     constructor Create(ACapacity: Integer; AOwnsValues: Boolean; AOwnsKeys: Boolean);
     destructor Destroy; override;
@@ -2705,7 +3018,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -2896,27 +3209,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfIntfSortedMap.InitializeArray(var List: TJclIntfIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfIntfSortedMap.InitializeArrayAfterMove(var List: TJclIntfIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfIntfSortedMap.MoveArray(var List: TJclIntfIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -2976,7 +3327,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -3329,7 +3680,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -3520,27 +3871,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclAnsiStrIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclAnsiStrIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclAnsiStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclAnsiStrIntfSortedMap.InitializeArray(var List: TJclAnsiStrIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclAnsiStrIntfSortedMap.InitializeArrayAfterMove(var List: TJclAnsiStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclAnsiStrIntfSortedMap.MoveArray(var List: TJclAnsiStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -3600,7 +3989,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -3953,7 +4342,7 @@ begin
       FEntries[Index].Value := '';
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -4144,27 +4533,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfAnsiStrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfAnsiStrSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfAnsiStrSortedMap.InitializeArray(var List: TJclIntfAnsiStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfAnsiStrSortedMap.InitializeArrayAfterMove(var List: TJclIntfAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfAnsiStrSortedMap.MoveArray(var List: TJclIntfAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -4224,7 +4651,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -4577,7 +5004,7 @@ begin
       FEntries[Index].Value := '';
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -4768,27 +5195,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclAnsiStrAnsiStrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclAnsiStrAnsiStrSortedMap.FinalizeArrayBeforeMove(var List: TJclAnsiStrAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclAnsiStrAnsiStrSortedMap.InitializeArray(var List: TJclAnsiStrAnsiStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclAnsiStrAnsiStrSortedMap.InitializeArrayAfterMove(var List: TJclAnsiStrAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclAnsiStrAnsiStrSortedMap.MoveArray(var List: TJclAnsiStrAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -4848,7 +5313,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -5201,7 +5666,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -5392,27 +5857,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclWideStrIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclWideStrIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclWideStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclWideStrIntfSortedMap.InitializeArray(var List: TJclWideStrIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclWideStrIntfSortedMap.InitializeArrayAfterMove(var List: TJclWideStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclWideStrIntfSortedMap.MoveArray(var List: TJclWideStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -5472,7 +5975,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -5825,7 +6328,7 @@ begin
       FEntries[Index].Value := '';
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -6016,27 +6519,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfWideStrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfWideStrSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfWideStrSortedMap.InitializeArray(var List: TJclIntfWideStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfWideStrSortedMap.InitializeArrayAfterMove(var List: TJclIntfWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfWideStrSortedMap.MoveArray(var List: TJclIntfWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -6096,7 +6637,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -6449,7 +6990,7 @@ begin
       FEntries[Index].Value := '';
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -6640,27 +7181,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclWideStrWideStrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclWideStrWideStrSortedMap.FinalizeArrayBeforeMove(var List: TJclWideStrWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclWideStrWideStrSortedMap.InitializeArray(var List: TJclWideStrWideStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclWideStrWideStrSortedMap.InitializeArrayAfterMove(var List: TJclWideStrWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclWideStrWideStrSortedMap.MoveArray(var List: TJclWideStrWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -6720,7 +7299,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -7074,7 +7653,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -7265,27 +7844,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclUnicodeStrIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclUnicodeStrIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclUnicodeStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclUnicodeStrIntfSortedMap.InitializeArray(var List: TJclUnicodeStrIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclUnicodeStrIntfSortedMap.InitializeArrayAfterMove(var List: TJclUnicodeStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclUnicodeStrIntfSortedMap.MoveArray(var List: TJclUnicodeStrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -7345,7 +7962,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -7701,7 +8318,7 @@ begin
       FEntries[Index].Value := '';
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -7892,27 +8509,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfUnicodeStrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfUnicodeStrSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfUnicodeStrSortedMap.InitializeArray(var List: TJclIntfUnicodeStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfUnicodeStrSortedMap.InitializeArrayAfterMove(var List: TJclIntfUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfUnicodeStrSortedMap.MoveArray(var List: TJclIntfUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -7972,7 +8627,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -8328,7 +8983,7 @@ begin
       FEntries[Index].Value := '';
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -8519,27 +9174,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclUnicodeStrUnicodeStrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclUnicodeStrUnicodeStrSortedMap.FinalizeArrayBeforeMove(var List: TJclUnicodeStrUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclUnicodeStrUnicodeStrSortedMap.InitializeArray(var List: TJclUnicodeStrUnicodeStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclUnicodeStrUnicodeStrSortedMap.InitializeArrayAfterMove(var List: TJclUnicodeStrUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclUnicodeStrUnicodeStrSortedMap.MoveArray(var List: TJclUnicodeStrUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -8599,7 +9292,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -8954,7 +9647,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -9145,27 +9838,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclSingleIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclSingleIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclSingleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclSingleIntfSortedMap.InitializeArray(var List: TJclSingleIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclSingleIntfSortedMap.InitializeArrayAfterMove(var List: TJclSingleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclSingleIntfSortedMap.MoveArray(var List: TJclSingleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -9225,7 +9956,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -9578,7 +10309,7 @@ begin
       FEntries[Index].Value := 0.0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -9769,27 +10500,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfSingleSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfSingleSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfSingleSortedMap.InitializeArray(var List: TJclIntfSingleSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfSingleSortedMap.InitializeArrayAfterMove(var List: TJclIntfSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfSingleSortedMap.MoveArray(var List: TJclIntfSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -9849,7 +10618,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -10202,7 +10971,7 @@ begin
       FEntries[Index].Value := 0.0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -10393,27 +11162,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclSingleSingleSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclSingleSingleSortedMap.InitializeArrayAfterMove(var List: TJclSingleSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclSingleSingleSortedMap.MoveArray(var List: TJclSingleSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -10473,7 +11246,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -10826,7 +11599,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -11017,27 +11790,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclDoubleIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclDoubleIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclDoubleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclDoubleIntfSortedMap.InitializeArray(var List: TJclDoubleIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclDoubleIntfSortedMap.InitializeArrayAfterMove(var List: TJclDoubleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclDoubleIntfSortedMap.MoveArray(var List: TJclDoubleIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -11097,7 +11908,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -11450,7 +12261,7 @@ begin
       FEntries[Index].Value := 0.0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -11641,27 +12452,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfDoubleSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfDoubleSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfDoubleSortedMap.InitializeArray(var List: TJclIntfDoubleSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfDoubleSortedMap.InitializeArrayAfterMove(var List: TJclIntfDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfDoubleSortedMap.MoveArray(var List: TJclIntfDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -11721,7 +12570,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -12074,7 +12923,7 @@ begin
       FEntries[Index].Value := 0.0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -12265,27 +13114,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclDoubleDoubleSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclDoubleDoubleSortedMap.InitializeArrayAfterMove(var List: TJclDoubleDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclDoubleDoubleSortedMap.MoveArray(var List: TJclDoubleDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -12345,7 +13198,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -12698,7 +13551,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -12889,27 +13742,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclExtendedIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclExtendedIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclExtendedIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclExtendedIntfSortedMap.InitializeArray(var List: TJclExtendedIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclExtendedIntfSortedMap.InitializeArrayAfterMove(var List: TJclExtendedIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclExtendedIntfSortedMap.MoveArray(var List: TJclExtendedIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -12969,7 +13860,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -13322,7 +14213,7 @@ begin
       FEntries[Index].Value := 0.0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -13513,27 +14404,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfExtendedSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfExtendedSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfExtendedSortedMap.InitializeArray(var List: TJclIntfExtendedSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfExtendedSortedMap.InitializeArrayAfterMove(var List: TJclIntfExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfExtendedSortedMap.MoveArray(var List: TJclIntfExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -13593,7 +14522,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -13946,7 +14875,7 @@ begin
       FEntries[Index].Value := 0.0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -14137,27 +15066,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclExtendedExtendedSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclExtendedExtendedSortedMap.InitializeArrayAfterMove(var List: TJclExtendedExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclExtendedExtendedSortedMap.MoveArray(var List: TJclExtendedExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -14217,7 +15150,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -14570,7 +15503,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -14761,27 +15694,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntegerIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntegerIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclIntegerIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntegerIntfSortedMap.InitializeArray(var List: TJclIntegerIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntegerIntfSortedMap.InitializeArrayAfterMove(var List: TJclIntegerIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntegerIntfSortedMap.MoveArray(var List: TJclIntegerIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -14841,7 +15812,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -15194,7 +16165,7 @@ begin
       FEntries[Index].Value := 0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -15385,27 +16356,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfIntegerSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfIntegerSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfIntegerSortedMap.InitializeArray(var List: TJclIntfIntegerSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfIntegerSortedMap.InitializeArrayAfterMove(var List: TJclIntfIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfIntegerSortedMap.MoveArray(var List: TJclIntfIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -15465,7 +16474,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -15818,7 +16827,7 @@ begin
       FEntries[Index].Value := 0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -16009,27 +17018,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntegerIntegerSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntegerIntegerSortedMap.InitializeArrayAfterMove(var List: TJclIntegerIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclIntegerIntegerSortedMap.MoveArray(var List: TJclIntegerIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -16089,7 +17102,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -16442,7 +17455,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -16633,27 +17646,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclCardinalIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclCardinalIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclCardinalIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclCardinalIntfSortedMap.InitializeArray(var List: TJclCardinalIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclCardinalIntfSortedMap.InitializeArrayAfterMove(var List: TJclCardinalIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclCardinalIntfSortedMap.MoveArray(var List: TJclCardinalIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -16713,7 +17764,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -17066,7 +18117,7 @@ begin
       FEntries[Index].Value := 0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -17257,27 +18308,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfCardinalSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfCardinalSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfCardinalSortedMap.InitializeArray(var List: TJclIntfCardinalSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfCardinalSortedMap.InitializeArrayAfterMove(var List: TJclIntfCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfCardinalSortedMap.MoveArray(var List: TJclIntfCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -17337,7 +18426,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -17690,7 +18779,7 @@ begin
       FEntries[Index].Value := 0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -17881,27 +18970,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclCardinalCardinalSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclCardinalCardinalSortedMap.InitializeArrayAfterMove(var List: TJclCardinalCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclCardinalCardinalSortedMap.MoveArray(var List: TJclCardinalCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -17961,7 +19054,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -18314,7 +19407,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -18505,27 +19598,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclInt64IntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclInt64IntfSortedMap.FinalizeArrayBeforeMove(var List: TJclInt64IntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclInt64IntfSortedMap.InitializeArray(var List: TJclInt64IntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclInt64IntfSortedMap.InitializeArrayAfterMove(var List: TJclInt64IntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclInt64IntfSortedMap.MoveArray(var List: TJclInt64IntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -18585,7 +19716,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -18938,7 +20069,7 @@ begin
       FEntries[Index].Value := 0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -19129,27 +20260,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfInt64SortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfInt64SortedMap.FinalizeArrayBeforeMove(var List: TJclIntfInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfInt64SortedMap.InitializeArray(var List: TJclIntfInt64SortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfInt64SortedMap.InitializeArrayAfterMove(var List: TJclIntfInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfInt64SortedMap.MoveArray(var List: TJclIntfInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -19209,7 +20378,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -19562,7 +20731,7 @@ begin
       FEntries[Index].Value := 0;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -19753,27 +20922,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclInt64Int64SortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclInt64Int64SortedMap.InitializeArrayAfterMove(var List: TJclInt64Int64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclInt64Int64SortedMap.MoveArray(var List: TJclInt64Int64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -19833,7 +21006,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -20186,7 +21359,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -20377,27 +21550,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclPtrIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclPtrIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclPtrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclPtrIntfSortedMap.InitializeArray(var List: TJclPtrIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclPtrIntfSortedMap.InitializeArrayAfterMove(var List: TJclPtrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclPtrIntfSortedMap.MoveArray(var List: TJclPtrIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -20457,7 +21668,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -20810,7 +22021,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -21001,27 +22212,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfPtrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfPtrSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfPtrSortedMap.InitializeArray(var List: TJclIntfPtrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfPtrSortedMap.InitializeArrayAfterMove(var List: TJclIntfPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfPtrSortedMap.MoveArray(var List: TJclIntfPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -21081,7 +22330,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -21434,7 +22683,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -21625,27 +22874,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclPtrPtrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclPtrPtrSortedMap.InitializeArrayAfterMove(var List: TJclPtrPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclPtrPtrSortedMap.MoveArray(var List: TJclPtrPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -21705,7 +22958,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -22059,7 +23312,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -22250,27 +23503,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntfSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntfSortedMap.FinalizeArrayBeforeMove(var List: TJclIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclIntfSortedMap.InitializeArray(var List: TJclIntfSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclIntfSortedMap.InitializeArrayAfterMove(var List: TJclIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclIntfSortedMap.MoveArray(var List: TJclIntfSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -22330,7 +23621,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -22697,7 +23988,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -22888,27 +24179,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclAnsiStrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclAnsiStrSortedMap.FinalizeArrayBeforeMove(var List: TJclAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclAnsiStrSortedMap.InitializeArray(var List: TJclAnsiStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclAnsiStrSortedMap.InitializeArrayAfterMove(var List: TJclAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclAnsiStrSortedMap.MoveArray(var List: TJclAnsiStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -22968,7 +24297,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -23335,7 +24664,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -23526,27 +24855,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclWideStrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclWideStrSortedMap.FinalizeArrayBeforeMove(var List: TJclWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclWideStrSortedMap.InitializeArray(var List: TJclWideStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclWideStrSortedMap.InitializeArrayAfterMove(var List: TJclWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclWideStrSortedMap.MoveArray(var List: TJclWideStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -23606,7 +24973,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -23974,7 +25341,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -24165,27 +25532,65 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclUnicodeStrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclUnicodeStrSortedMap.FinalizeArrayBeforeMove(var List: TJclUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  Assert(Count > 0);
+  if FromIndex < ToIndex then
+  begin
+    if Count > (ToIndex - FromIndex) then
+      Finalize(List[FromIndex + Count], ToIndex - FromIndex)
+    else
+      Finalize(List[ToIndex], Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if Count > (FromIndex - ToIndex) then
+      Count := FromIndex - ToIndex;
+    Finalize(List[ToIndex], Count)
+  end;
+end;
+
+procedure TJclUnicodeStrSortedMap.InitializeArray(var List: TJclUnicodeStrSortedMapEntryArray; FromIndex, Count: SizeInt);
+begin
+  {$IFDEF FPC}
+  while Count > 0 do
+  begin
+    Initialize(List[FromIndex]);
+    Inc(FromIndex);
+    Dec(Count);
+  end;
+  {$ELSE ~FPC}
+  Initialize(List[FromIndex], Count);
+  {$ENDIF ~FPC}
+end;
+
+procedure TJclUnicodeStrSortedMap.InitializeArrayAfterMove(var List: TJclUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Keep reference counting working }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    InitializeArray(List, FromIndex, Count);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      InitializeArray(List, ToIndex + Count, FromIndex - ToIndex)
+    else
+      InitializeArray(List, FromIndex, Count);
+  end;
+end;
+
+procedure TJclUnicodeStrSortedMap.MoveArray(var List: TJclUnicodeStrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    FinalizeArrayBeforeMove(List, FromIndex, ToIndex, Count);
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -24245,7 +25650,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -24614,7 +26019,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -24805,27 +26210,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclSingleSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclSingleSortedMap.InitializeArrayAfterMove(var List: TJclSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclSingleSortedMap.MoveArray(var List: TJclSingleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -24885,7 +26294,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -25252,7 +26661,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -25443,27 +26852,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclDoubleSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclDoubleSortedMap.InitializeArrayAfterMove(var List: TJclDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclDoubleSortedMap.MoveArray(var List: TJclDoubleSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -25523,7 +26936,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -25890,7 +27303,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -26081,27 +27494,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclExtendedSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclExtendedSortedMap.InitializeArrayAfterMove(var List: TJclExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclExtendedSortedMap.MoveArray(var List: TJclExtendedSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -26161,7 +27578,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -26528,7 +27945,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -26719,27 +28136,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclIntegerSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclIntegerSortedMap.InitializeArrayAfterMove(var List: TJclIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclIntegerSortedMap.MoveArray(var List: TJclIntegerSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -26799,7 +28220,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -27166,7 +28587,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -27357,27 +28778,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclCardinalSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclCardinalSortedMap.InitializeArrayAfterMove(var List: TJclCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclCardinalSortedMap.MoveArray(var List: TJclCardinalSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -27437,7 +28862,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -27804,7 +29229,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -27995,27 +29420,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclInt64SortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclInt64SortedMap.InitializeArrayAfterMove(var List: TJclInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclInt64SortedMap.MoveArray(var List: TJclInt64SortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -28075,7 +29504,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -28442,7 +29871,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -28633,27 +30062,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclPtrSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclPtrSortedMap.InitializeArrayAfterMove(var List: TJclPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclPtrSortedMap.MoveArray(var List: TJclPtrSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -28713,7 +30146,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -29081,7 +30514,7 @@ begin
       FEntries[Index].Value := nil;
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -29272,27 +30705,31 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclSortedMap.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclSortedMap.InitializeArrayAfterMove(var List: TJclSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
+begin
+  { Clean array }
+  if FromIndex < ToIndex then
+  begin
+    if (ToIndex - FromIndex) < Count then
+      Count := ToIndex - FromIndex;
+    FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end
+  else
+  if FromIndex > ToIndex then
+  begin
+    if (FromIndex - ToIndex) < Count then
+      FillChar(List[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(List[0]), 0)
+    else
+     FillChar(List[FromIndex], Count * SizeOf(List[0]), 0);
+  end;
+end;
+
+procedure TJclSortedMap.MoveArray(var List: TJclSortedMapEntryArray; FromIndex, ToIndex, Count: SizeInt);
 begin
   if Count > 0 then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
-    else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
+    Move(List[FromIndex], List[ToIndex], Count * SizeOf(List[0]));
+    InitializeArrayAfterMove(List, FromIndex, ToIndex, Count);
   end;
 end;
 
@@ -29352,7 +30789,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);
@@ -29739,7 +31176,7 @@ begin
       FEntries[Index].Value := Default(TValue);
       FreeKey(FEntries[Index].Key);
       if Index < (FSize - 1) then
-        MoveArray(Index + 1, Index, FSize - Index - 1);
+        MoveArray(FEntries, Index + 1, Index, FSize - Index - 1);
       Dec(FSize);
       AutoPack;
     end
@@ -29930,28 +31367,38 @@ begin
   {$ENDIF THREADSAFE}
 end;
 
-procedure TJclSortedMap<TKey,TValue>.MoveArray(FromIndex, ToIndex, Count: Integer);
+procedure TJclSortedMap<TKey,TValue>.MoveArray(var List: TSortedEntryArray; FromIndex, ToIndex, Count: SizeInt);
+var
+  I: SizeInt;
 begin
-  if Count > 0 then
+  if FromIndex < ToIndex then
   begin
-    Move(FEntries[FromIndex], FEntries[ToIndex], Count * SizeOf(FEntries[0]));
-    { Keep reference counting working }
-    if FromIndex < ToIndex then
-    begin
-      if (ToIndex - FromIndex) < Count then
-        FillChar(FEntries[FromIndex], (ToIndex - FromIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end
+    for I := Count - 1 downto 0 do
+      List[ToIndex + I] := List[FromIndex + I];
+
+    if (ToIndex - FromIndex) < Count then
+      // overlapped source and target
+      for I := 0 to ToIndex - FromIndex - 1 do
+        List[FromIndex + I] := Default(TSortedEntry)
     else
-    if FromIndex > ToIndex then
-    begin
-      if (FromIndex - ToIndex) < Count then
-        FillChar(FEntries[ToIndex + Count], (FromIndex - ToIndex) * SizeOf(FEntries[0]), 0)
-      else
-        FillChar(FEntries[FromIndex], Count * SizeOf(FEntries[0]), 0);
-    end;
-  end;
+      // independant
+      for I := 0 to Count - 1 do
+        List[FromIndex + I] := Default(TSortedEntry);
+  end
+  else
+  begin
+    for I := 0 to Count - 1 do
+      List[ToIndex + I] := List[FromIndex + I];
+
+    if (FromIndex - ToIndex) < Count then
+      // overlapped source and target
+      for I := Count - FromIndex + ToIndex to Count - 1 do
+        List[FromIndex + I] := Default(TSortedEntry)
+    else
+      // independant
+      for I := 0 to Count - 1 do
+        List[FromIndex + I] := Default(TSortedEntry);
+  end; 
 end;
 
 procedure TJclSortedMap<TKey,TValue>.PutAll(const AMap: IJclMap<TKey,TValue>);
@@ -30010,7 +31457,7 @@ begin
         begin
           Inc(Index);
           if (Index < FSize) and (KeysCompare(FEntries[Index].Key, Key) <> 0) then
-            MoveArray(Index, Index + 1, FSize - Index);
+            MoveArray(FEntries, Index, Index + 1, FSize - Index);
           FEntries[Index].Key := Key;
           FEntries[Index].Value := Value;
           Inc(FSize);

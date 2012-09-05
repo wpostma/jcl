@@ -59,11 +59,18 @@ uses
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  Winapi.Windows, System.SysUtils,
+  {$IFNDEF FPC}
+  Winapi.AccCtrl, Winapi.ActiveX,
+  {$ENDIF ~FPC}
+  {$ELSE ~HAS_UNITSCOPE}
   Windows, SysUtils,
   {$IFNDEF FPC}
   AccCtrl,
-  ActiveX,
   {$ENDIF ~FPC}
+  ActiveX,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclBase;
 
 {$HPPEMIT '#include <WinDef.h>'}
@@ -90,6 +97,14 @@ uses
 {$HPPEMIT '#include <objbase.h>'}
 {$HPPEMIT '#include <ntsecapi.h>'}
 {$HPPEMIT ''}
+{$IFDEF RTL230_UP}
+{$HPPEMIT '// To avoid ambiguity between IMAGE_LOAD_CONFIG_DIRECTORY32 and  Winapi::Windows::IMAGE_LOAD_CONFIG_DIRECTORY32'}
+{$HPPEMIT '#define IMAGE_LOAD_CONFIG_DIRECTORY32 ::IMAGE_LOAD_CONFIG_DIRECTORY32'}
+{$HPPEMIT ''}
+{$HPPEMIT '// To avoid ambiguity between IMAGE_LOAD_CONFIG_DIRECTORY64 and  Winapi::Windows::IMAGE_LOAD_CONFIG_DIRECTORY64'}
+{$HPPEMIT '#define IMAGE_LOAD_CONFIG_DIRECTORY64 ::IMAGE_LOAD_CONFIG_DIRECTORY64'}
+{$HPPEMIT ''}
+{$ENDIF RTL230_UP}
 
 // EJclWin32Error
 {$IFDEF MSWINDOWS}
@@ -115,6 +130,7 @@ type
 {$I win32api\WinBase.int}
 {$I win32api\AclApi.int}
 {$I win32api\ImageHlp.int}
+{$I win32api\IoAPI.int}
 {$I win32api\LmErr.int}
 {$I win32api\LmCons.int}
 {$I win32api\LmAccess.int}
@@ -279,6 +295,7 @@ end;
 
 {$I win32api\AclApi.imp}
 {$I win32api\ImageHlp.imp}
+{$I win32api\IoAPI.imp}
 {$I win32api\LmAccess.imp}
 {$I win32api\LmApiBuf.imp}
 {$I win32api\Lmwksta.imp}

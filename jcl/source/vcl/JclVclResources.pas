@@ -87,9 +87,11 @@ resourcestring
 
 //=== JclOpenDialogFavorites.pas =============================================
 resourcestring
-  RsOpenDialogAdd          = '<- Add';
-  RsOpenDialogDelete       = '&Delete';
-  RsOpenDialogFavorites    = '&Favorites';
+  RsOpenDialogList         = ' --> Favorites';
+  RsOpenDialogAdd          = ' --> Add to this list';
+  RsOpenDialogDelete       = ' --> Delete from this list';
+  RsOpenDialogVirtual      = ' --> Virtual directories cannot be added to the favorites';
+  RsOpenDialogFavorites    = '&Favorites:';
   RsOpenDialogConfirmation = 'Confirmation';
   RsOpenDialogDelConfirm   = 'Are you sure to delete "%s" from favorite folders?';
 

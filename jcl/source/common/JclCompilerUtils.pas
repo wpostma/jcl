@@ -104,6 +104,13 @@ type
 
   TJclBCC32 = class(TJclBorlandCommandLineTool)
   public
+    class function GetPlatform: string; virtual;
+    function GetExeName: string; override;
+  end;
+
+  TJclBCC64 = class(TJclBCC32)
+  public
+    class function GetPlatform: string; override;
     function GetExeName: string; override;
   end;
 
@@ -117,6 +124,8 @@ type
     Namespace: string;
   end;
 
+  TJclStringsGetterFunction = function: TStrings of object;
+
   TJclDCC32 = class(TJclBorlandCommandLineTool)
   private
     FDCPSearchPath: string;
@@ -125,6 +134,7 @@ type
     FCppSearchPath: string;
     FSupportsNoConfig: Boolean;
     FSupportsPlatform: Boolean;
+    FOnEnvironmentVariables: TJclStringsGetterFunction;
   protected
     procedure AddProjectOptions(const ProjectFileName, DCPPath: string);
     function Compile(const ProjectFileName: string): Boolean;
@@ -147,11 +157,18 @@ type
     property DCPSearchPath: string read FDCPSearchPath;
     property LibrarySearchPath: string read FLibrarySearchPath;
     property LibraryDebugSearchPath: string read FLibraryDebugSearchPath;
+    property OnEnvironmentVariables: TJclStringsGetterFunction read FOnEnvironmentVariables write FOnEnvironmentVariables;
     property SupportsNoConfig: Boolean read FSupportsNoConfig;
     property SupportsPlatform: Boolean read FSupportsPlatform;
   end;
 
   TJclDCC64 = class(TJclDCC32)
+  public
+    class function GetPlatform: string; override;
+    function GetExeName: string; override;
+  end;
+
+  TJclDCCOSX32 = class(TJclDCC32)
   public
     class function GetPlatform: string; override;
     function GetExeName: string; override;
@@ -185,8 +202,10 @@ type
 const
   AsmExeName                = 'tasm32.exe';
   BCC32ExeName              = 'bcc32.exe';
+  BCC64ExeName              = 'bcc64.exe';
   DCC32ExeName              = 'dcc32.exe';
   DCC64ExeName              = 'dcc64.exe';
+  DCCOSX32ExeName           = 'dccosx.exe';
   DCCILExeName              = 'dccil.exe';
   Bpr2MakExeName            = 'bpr2mak.exe';
   MakeExeName               = 'make.exe';
@@ -759,7 +778,7 @@ function TJclBorlandCommandLineTool.InternalExecute(
 var
   LaunchCommand: string;
 begin
-  LaunchCommand := Format('%s %s', [FileName, CommandLine]);
+  LaunchCommand := Format('%s %s', [FileName, StrAnsiToOem(AnsiString(CommandLine))]);
   if Assigned(FOutputCallback) then
   begin
     FOutputCallback(LaunchCommand);
@@ -809,6 +828,23 @@ begin
   Result := BCC32ExeName;
 end;
 
+class function TJclBCC32.GetPlatform: string;
+begin
+  Result := BDSPlatformWin32;
+end;
+
+//=== { TJclBCC64 } ============================================================
+
+function TJclBCC64.GetExeName: string;
+begin
+  Result := BCC64ExeName;
+end;
+
+class function TJclBCC64.GetPlatform: string;
+begin
+  Result := BDSPlatformWin64;
+end;
+
 //=== { TJclDCC32 } ============================================================
 
 function TJclDCC32.AddDProjOptions(const ProjectFileName: string; var ProjectOptions: TProjectOptions): Boolean;
@@ -826,6 +862,10 @@ begin
       MsBuildOptions.Init;
       if SupportsPlatform then
         MsBuildOptions.Properties.GlobalProperties.Values['Platform'] := GetPlatform;
+
+      if Assigned(FOnEnvironmentVariables) then
+        MsBuildOptions.Properties.EnvironmentProperties.Assign(FOnEnvironmentVariables);
+
       MsBuildOptions.Parse;
 
       PersonalityName := '';
@@ -1190,6 +1230,18 @@ end;
 function TJclDCC64.GetExeName: string;
 begin
   Result := DCC64ExeName;
+end;
+
+//=== { TJclDCCOSX32 } =======================================================
+
+class function TJclDCCOSX32.GetPlatform: string;
+begin
+  Result := BDSPlatformOSX32;
+end;
+
+function TJclDCCOSX32.GetExeName: string;
+begin
+  Result := DCCOSX32ExeName;
 end;
 
 {$IFDEF MSWINDOWS}

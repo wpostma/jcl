@@ -1,11 +1,13 @@
 unit PCREDemoMain;
 
+{$I ..\..\..\source\include\jcl.inc}
+
 interface
 
 uses
   Windows, Messages,
   SysUtils, Classes, Forms, Dialogs, ActnList, ComCtrls, StdCtrls, Controls,
-  JclPCRE;
+  JclPCRE, {System.Actions, Vcl.}ExtCtrls;
 
 type
   TfrmMain = class(TForm)
@@ -20,6 +22,8 @@ type
     acFindNext: TAction;
     acOpen: TAction;
     odOpen: TOpenDialog;
+    sbMain: TStatusBar;
+    GroupBoxMatchOptions: TGroupBox;
     chkIgnoreCase: TCheckBox;
     chkMultiLine: TCheckBox;
     chkDotAll: TCheckBox;
@@ -31,22 +35,31 @@ type
     chkNotEOL: TCheckBox;
     chkUnGreedy: TCheckBox;
     chkNotEmpty: TCheckBox;
-    chkUTF8: TCheckBox;
-    sbMain: TStatusBar;
+    GroupBoxCompileOptions: TGroupBox;
+    chkStudy: TCheckBox;
+    chkUserLocale: TCheckBox;
+    chkJITCompile: TCheckBox;
+    GroupBoxSystemOptions: TGroupBox;
+    RadioButtonDefault: TRadioButton;
+    RadioButtonUTF8: TRadioButton;
+    RadioButtonUCS2: TRadioButton;
+    RadioButtonUTF16: TRadioButton;
+    RadioButtonANSI: TRadioButton;
     procedure acOpenExecute(Sender: TObject);
     procedure acFindExecute(Sender: TObject);
     procedure acFindNextExecute(Sender: TObject);
     procedure edRegExprChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-
-  private
+  public
     { Private declarations }
-    RE: TJclAnsiRegEx;
+    {$IFDEF JCL_PCRE}
+    RE: TJclRegExBase;
+    {$ENDIF JCL_PCRE}
     FMatchIndex: integer;
-    procedure SelectText(const Range: TJclAnsiCaptureRange);
+    procedure SelectText(const Range: TJclCaptureRange);
     procedure Match;
-    function GetUIOptions: TJclAnsiRegExOptions;
+    function GetUIOptions: TJclRegExOptions;
     procedure UpdateUIOptions;
     procedure LoadFromFile(const Filename:string);
   protected
@@ -72,23 +85,38 @@ end;
 
 procedure TfrmMain.acFindExecute(Sender: TObject);
 begin
+  {$IFDEF JCL_PCRE}
   FreeAndNil(RE);
-  RE := TJclAnsiRegEx.Create;
+  {$IFDEF PCRE_8}
+  if RadioButtonANSI.Checked or RadioButtonUTF8.Checked then
+    RE := TJclAnsiRegEx.Create
+  else
+  {$ENDIF PCRE_8}
+  {$IFDEF PCRE_16}
+  if RadioButtonUCS2.Checked or RadioButtonUTF16.Checked then
+    RE := TJclWideRegEx.Create
+  else
+  {$ENDIF PCRE_16}
+  if RadioButtonDefault.Checked then
+    RE := TJclRegEx.Create;
   RE.Options := GetUIOptions;
-  RE.Compile(edRegExpr.Text, false, false);
+  RE.Compile(edRegExpr.Text, chkStudy.Checked, chkUserLocale.Checked, chkJITCompile.Checked);
   FMatchIndex := 1;
   Match;
+  {$ENDIF JCL_PCRE}
 end;
 
 procedure TfrmMain.acFindNextExecute(Sender: TObject);
 begin
+  {$IFDEF JCL_PCRE}
   if RE = nil then
     acFind.Execute
   else
     Match;
+  {$ENDIF JCL_PCRE}
 end;
 
-procedure TfrmMain.SelectText(const Range: TJclAnsiCaptureRange);
+procedure TfrmMain.SelectText(const Range: TJclCaptureRange);
 begin
   reFile.SelStart := Range.FirstPos - 1;
   reFile.SelLength := Range.LastPos - Range.FirstPos + 1;
@@ -96,6 +124,7 @@ end;
 
 procedure TfrmMain.Match;
 begin
+  {$IFDEF JCL_PCRE}
   RE.Options := GetUIOptions;
   if not RE.Match(reFile.Lines.Text, FMatchIndex) then
   begin
@@ -108,9 +137,10 @@ begin
     FMatchIndex := RE.CaptureRanges[0].LastPos + 1;
   end;
   UpdateUIOptions;
+  {$ENDIF JCL_PCRE}
 end;
 
-function TfrmMain.GetUIOptions: TJclAnsiRegExOptions;
+function TfrmMain.GetUIOptions: TJclRegExOptions;
 begin
   Result := [];
   if chkIgnoreCase.Checked then
@@ -135,14 +165,19 @@ begin
     Include(Result, roUnGreedy);
   if chkNotEmpty.Checked then
     Include(Result, roNotEmpty);
-  if chkUTF8.Checked then
+  if RadioButtonUTF8.Checked then
     Include(Result, roUTF8);
+  if RadioButtonUTF16.Checked then
+    Include(Result, roUTF16);
 end;
 
 procedure TfrmMain.UpdateUIOptions;
+{$IFDEF JCL_PCRE}
 var
-  Options: TJclAnsiRegExOptions;
+  Options: TJclRegExOptions;
+{$ENDIF JCL_PCRE}
 begin
+  {$IFDEF JCL_PCRE}
   if RE = nil then Exit;
   Options := RE.Options;
   chkIgnoreCase.Checked := roIgnoreCase in Options;
@@ -156,22 +191,57 @@ begin
   chkNotEOL.Checked := roNotEOL in Options;
   chkUngreedy.Checked := roUnGreedy in Options;
   chkNotEmpty.Checked := roNotEmpty in Options;
-  chkUTF8.Checked := roUTF8 in Options;
+  {$IFDEF PCRE_8}
+  if RE is TJclAnsiRegEx then
+  begin
+    if roUTF8 in Options then
+      RadioButtonUTF8.Checked := True
+    else
+      RadioButtonAnsi.Checked := True;
+  end;
+  {$ENDIF PCRE_8}
+  {$IFDEF PCRE_16}
+  if RE is TJclWideRegEx then
+  begin
+    if roUTF16 in Options then
+      RadioButtonUTF16.Checked := True
+    else
+      RadioButtonUCS2.Checked := True;
+  end;
+  {$ENDIF PCRE_16}
+  {$ENDIF JCL_PCRE}
 end;
 
 procedure TfrmMain.edRegExprChange(Sender: TObject);
 begin
+  {$IFDEF JCL_PCRE}
   FreeAndNil(RE);
+  {$ENDIF JCL_PCRE}
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
 begin
+  {$IFDEF JCL_PCRE}
   FreeAndNil(RE);
+  {$ENDIF JCL_PCRE}
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   DragAcceptFiles(Handle, True);
+  {$IFDEF JCL_PCRE}
+  RadioButtonDefault.Checked := True;
+  {$ELSE ~JCL_PCRE}
+  RadioButtonDefault.Enabled := False;
+  {$ENDIF ~JCL_PCRE}
+  {$IFNDEF PCRE_8}
+  RadioButtonANSI.Enabled := False;
+  RadioButtonUTF8.Enabled := False;
+  {$ENDIF ~PCRE_8}
+  {$IFNDEF PCRE_16}
+  RadioButtonUCS2.Enabled := False;
+  RadioButtonUTF16.Enabled := False;
+  {$ENDIF ~PCRE_16}
 end;
 
 procedure TfrmMain.WMDropFiles(var Message: TWMDropFiles);

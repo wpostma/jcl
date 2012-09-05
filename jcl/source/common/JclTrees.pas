@@ -73,7 +73,8 @@ type
   end;
 
   TJclIntfTree = class(TJclIntfAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclIntfEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclIntfContainer, IJclIntfFlatContainer, IJclIntfEqualityComparer,
     IJclIntfCollection, IJclIntfTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -202,7 +203,8 @@ type
   end;
 
   TJclAnsiStrTree = class(TJclAnsiStrAbstractCollection, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclAnsiStrEqualityComparer, IJclStrContainer, IJclAnsiStrContainer, IJclAnsiStrFlatContainer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclAnsiStrContainer, IJclAnsiStrFlatContainer, IJclAnsiStrEqualityComparer, IJclStrBaseContainer,
     IJclAnsiStrCollection, IJclAnsiStrTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -331,7 +333,8 @@ type
   end;
 
   TJclWideStrTree = class(TJclWideStrAbstractCollection, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclWideStrEqualityComparer, IJclStrContainer, IJclWideStrContainer, IJclWideStrFlatContainer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclWideStrContainer, IJclWideStrFlatContainer, IJclWideStrEqualityComparer, IJclStrBaseContainer,
     IJclWideStrCollection, IJclWideStrTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -463,7 +466,8 @@ type
 
   {$IFDEF SUPPORTS_UNICODE_STRING}
   TJclUnicodeStrTree = class(TJclUnicodeStrAbstractCollection, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclUnicodeStrEqualityComparer, IJclStrContainer, IJclUnicodeStrContainer, IJclUnicodeStrFlatContainer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclUnicodeStrContainer, IJclUnicodeStrFlatContainer, IJclUnicodeStrEqualityComparer, IJclStrBaseContainer,
     IJclUnicodeStrCollection, IJclUnicodeStrTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -631,7 +635,8 @@ type
   end;
 
   TJclSingleTree = class(TJclSingleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclSingleEqualityComparer, IJclSingleContainer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclSingleContainer, IJclSingleFlatContainer, IJclSingleEqualityComparer,
     IJclSingleCollection, IJclSingleTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -760,7 +765,8 @@ type
   end;
 
   TJclDoubleTree = class(TJclDoubleAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclDoubleEqualityComparer, IJclDoubleContainer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclDoubleContainer, IJclDoubleFlatContainer, IJclDoubleEqualityComparer,
     IJclDoubleCollection, IJclDoubleTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -889,7 +895,8 @@ type
   end;
 
   TJclExtendedTree = class(TJclExtendedAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclExtendedEqualityComparer, IJclExtendedContainer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclExtendedContainer, IJclExtendedFlatContainer, IJclExtendedEqualityComparer,
     IJclExtendedCollection, IJclExtendedTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1054,7 +1061,8 @@ type
   end;
 
   TJclIntegerTree = class(TJclIntegerAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclIntegerEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclIntegerContainer, IJclIntegerFlatContainer, IJclIntegerEqualityComparer,
     IJclIntegerCollection, IJclIntegerTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1183,7 +1191,8 @@ type
   end;
 
   TJclCardinalTree = class(TJclCardinalAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclCardinalEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclCardinalContainer, IJclCardinalFlatContainer, IJclCardinalEqualityComparer,
     IJclCardinalCollection, IJclCardinalTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1312,7 +1321,8 @@ type
   end;
 
   TJclInt64Tree = class(TJclInt64AbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclInt64EqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclInt64Container, IJclInt64FlatContainer, IJclInt64EqualityComparer,
     IJclInt64Collection, IJclInt64Tree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1441,7 +1451,8 @@ type
   end;
 
   TJclPtrTree = class(TJclPtrAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclPtrEqualityComparer,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclPtrContainer, IJclPtrFlatContainer, IJclPtrEqualityComparer,
     IJclPtrCollection, IJclPtrTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1570,7 +1581,8 @@ type
   end;
 
   TJclTree = class(TJclAbstractContainer, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclEqualityComparer, IJclObjectOwner,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclContainer, IJclFlatContainer, IJclEqualityComparer, IJclObjectOwner,
     IJclCollection, IJclTree)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1706,9 +1718,9 @@ type
   TJclPostOrderTreeIterator<T> = class;
 
   TJclTree<T> = class(TJclAbstractContainer<T>, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer, IJclEqualityComparer<T>, IJclItemOwner<T>,
+    IJclIntfCloneable, IJclCloneable, IJclPackable, IJclGrowable, IJclBaseContainer,
+    IJclContainer<T>, IJclFlatContainer<T>, IJclEqualityComparer<T>, IJclItemOwner<T>,
     IJclCollection<T>, IJclTree<T>)
-
   protected
     type
       TTreeNode = TJclTreeNode<T>;
@@ -1826,7 +1838,7 @@ type
 
   // E = External helper to compare items for equality
   TJclTreeE<T> = class(TJclTree<T>, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclBaseContainer, IJclItemOwner<T>, IJclEqualityComparer<T>,
+    IJclIntfCloneable, IJclCloneable, IJclBaseContainer, IJclContainer<T>, IJclItemOwner<T>, IJclEqualityComparer<T>,
     IJclCollection<T>, IJclTree<T>)
   private
     FEqualityComparer: IJclEqualityComparer<T>;
@@ -1842,7 +1854,7 @@ type
 
   // F = Function to compare items for equality
   TJclTreeF<T> = class(TJclTree<T>, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclBaseContainer, IJclItemOwner<T>, IJclEqualityComparer<T>,
+    IJclIntfCloneable, IJclCloneable, IJclBaseContainer, IJclContainer<T>, IJclItemOwner<T>, IJclEqualityComparer<T>,
     IJclCollection<T>, IJclTree<T>)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;
@@ -1852,7 +1864,7 @@ type
 
   // I = Items can compare themselves to an other for equality
   TJclTreeI<T: IEquatable<T>> = class(TJclTree<T>, {$IFDEF THREADSAFE} IJclLockable, {$ENDIF THREADSAFE}
-    IJclIntfCloneable, IJclCloneable, IJclBaseContainer, IJclItemOwner<T>, IJclEqualityComparer<T>,
+    IJclIntfCloneable, IJclCloneable, IJclBaseContainer, IJclContainer<T>, IJclItemOwner<T>, IJclEqualityComparer<T>,
     IJclCollection<T>, IJclTree<T>)
   protected
     function CreateEmptyContainer: TJclAbstractContainerBase; override;

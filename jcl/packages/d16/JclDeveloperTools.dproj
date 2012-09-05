@@ -60,6 +60,13 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<VerInfo_MajorVer>2</VerInfo_MajorVer>
+			<VerInfo_Build>4571</VerInfo_Build>
+			<VerInfo_Release>1</VerInfo_Release>
+			<VerInfo_MinorVer>4</VerInfo_MinorVer>
+			<VerInfo_Keys>CompanyName=Project JEDI;FileDescription=JEDI Code Library Developer Tools package;FileVersion=2.4.1.4571;InternalName=JclDeveloperTools;LegalCopyright=Copyright (C) 1999, 2012 Project JEDI;OriginalFilename=JclDeveloperTools160.bpl;ProductName=JEDI Code Library;ProductVersion=2.4.1.4571</VerInfo_Keys>
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 			<DCC_Namespace>System;System.Win;WinApi;Vcl;Vcl.Imaging;$(DCC_Namespace)</DCC_Namespace>
 			<RuntimeOnlyPackage>true</RuntimeOnlyPackage>
 			<DCC_DebugInformation>false</DCC_DebugInformation>
@@ -72,19 +79,19 @@
 			<DllSuffix>160</DllSuffix>
 			<GenDll>true</GenDll>
 			<GenPackage>true</GenPackage>
-			<DCC_ImageBase>$48380000</DCC_ImageBase>
-			<DCC_UsePackage>rtl;vcl;Jcl;JclContainers</DCC_UsePackage>
+			<DCC_ImageBase>$48800000</DCC_ImageBase>
+			<DCC_UsePackage>rtl;Jcl;JclContainers;$(DCC_UsePackage)</DCC_UsePackage>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win64)'!=''">
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-			<VerInfo_Locale>1031</VerInfo_Locale>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win32)'!=''">
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-			<VerInfo_Locale>1031</VerInfo_Locale>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -102,7 +109,7 @@
 			<DCC_ObjPath>..\..\lib\d16\win64\debug;..\..\source\include;$(DCC_ObjPath)</DCC_ObjPath>
 			<DCC_IncludePath>..\..\lib\d16\win64\debug;..\..\source\include;$(DCC_IncludePath)</DCC_IncludePath>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1031</VerInfo_Locale>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
 			<DCC_DcuOutput>..\..\lib\d16\win32\debug</DCC_DcuOutput>
@@ -114,7 +121,7 @@
 			<DCC_ObjPath>..\..\lib\d16\win32\debug;..\..\source\include;$(DCC_ObjPath)</DCC_ObjPath>
 			<DCC_IncludePath>..\..\lib\d16\win32\debug;..\..\source\include;$(DCC_IncludePath)</DCC_IncludePath>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1031</VerInfo_Locale>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
 			<DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
@@ -132,7 +139,7 @@
 			<DCC_ObjPath>..\..\lib\d16\win64;..\..\source\include;$(DCC_ObjPath)</DCC_ObjPath>
 			<DCC_IncludePath>..\..\lib\d16\win64;..\..\source\include;$(DCC_IncludePath)</DCC_IncludePath>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1031</VerInfo_Locale>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
 			<DCC_DcuOutput>..\..\lib\d16\win32</DCC_DcuOutput>
@@ -144,18 +151,18 @@
 			<DCC_ObjPath>..\..\lib\d16\win32;..\..\source\include;$(DCC_ObjPath)</DCC_ObjPath>
 			<DCC_IncludePath>..\..\lib\d16\win32;..\..\source\include;$(DCC_IncludePath)</DCC_IncludePath>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1031</VerInfo_Locale>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<ItemGroup>
-			<DelphiCompile Include="JclDeveloperTools.dpk">
+			<DelphiCompile Include="$(MainSource)">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="rtl.dcp"/>
-			<DCCReference Include="vcl.dcp"/>
 			<DCCReference Include="Jcl.dcp"/>
 			<DCCReference Include="JclContainers.dcp"/>
 			<DCCReference Include="..\..\source\common\JclCompilerUtils.pas"/>
 			<DCCReference Include="..\..\source\common\JclDevToolsResources.pas"/>
+			<DCCReference Include="..\..\source\common\JclExprEval.pas"/>
 			<DCCReference Include="..\..\source\common\JclIDEUtils.pas"/>
 			<DCCReference Include="..\..\source\common\JclPreProcessorAlgorithmsTemplates.pas"/>
 			<DCCReference Include="..\..\source\common\JclPreProcessorArrayListsTemplates.pas"/>
@@ -170,6 +177,7 @@
 			<DCCReference Include="..\..\source\common\JclPreProcessorContainerTypes.pas"/>
 			<DCCReference Include="..\..\source\common\JclPreProcessorExcDlgTemplates.pas"/>
 			<DCCReference Include="..\..\source\common\JclPreProcessorHashMapsTemplates.pas"/>
+			<DCCReference Include="..\..\source\common\JclPreProcessorHashSetsTemplates.pas"/>
 			<DCCReference Include="..\..\source\common\JclPreProcessorLexer.pas"/>
 			<DCCReference Include="..\..\source\common\JclPreProcessorLinkedListsTemplates.pas"/>
 			<DCCReference Include="..\..\source\common\JclPreProcessorParser.pas"/>
@@ -205,27 +213,27 @@
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
 						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
 						<VersionInfo Name="MajorVer">2</VersionInfo>
-						<VersionInfo Name="MinorVer">3</VersionInfo>
+						<VersionInfo Name="MinorVer">4</VersionInfo>
 						<VersionInfo Name="Release">1</VersionInfo>
-						<VersionInfo Name="Build">4197</VersionInfo>
+						<VersionInfo Name="Build">4571</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
 						<VersionInfo Name="Private">False</VersionInfo>
 						<VersionInfo Name="DLL">False</VersionInfo>
-						<VersionInfo Name="Locale">1031</VersionInfo>
+						<VersionInfo Name="Locale">1033</VersionInfo>
 						<VersionInfo Name="CodePage">1252</VersionInfo>
 					</VersionInfo>
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Project JEDI</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">JEDI Code Library Developer Tools package</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.1.4197</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.4.1.4571</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">JclDeveloperTools</VersionInfoKeys>
-						<VersionInfoKeys Name="LegalCopyright">Copyright (C) 1999, 2011 Project JEDI</VersionInfoKeys>
+						<VersionInfoKeys Name="LegalCopyright">Copyright (C) 1999, 2012 Project JEDI</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
 						<VersionInfoKeys Name="OriginalFilename">JclDeveloperTools160.bpl</VersionInfoKeys>
 						<VersionInfoKeys Name="ProductName">JEDI Code Library</VersionInfoKeys>
-						<VersionInfoKeys Name="ProductVersion">2.3 Build 4197</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductVersion">2.4.1.4571</VersionInfoKeys>
 					</VersionInfoKeys>
 					<Source>
 						<Source Name="MainSource">JclDeveloperTools.dpk</Source>

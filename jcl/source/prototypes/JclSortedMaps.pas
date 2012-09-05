@@ -37,33 +37,43 @@ interface
 {$I jcl.inc}
 
 uses
-  Classes,
   {$IFDEF UNITVERSIONING}
   JclUnitVersioning,
   {$ENDIF UNITVERSIONING}
+  {$IFDEF HAS_UNITSCOPE}
+  System.Classes,
+  {$ELSE ~HAS_UNITSCOPE}
+  Classes,
+  {$ENDIF ~HAS_UNITSCOPE}
   JclAlgorithms,
   JclBase, JclSynch,
   JclAbstractContainers, JclContainerIntf, JclArrayLists, JclArraySets;
 {$I containers\JclContainerCommon.imp}
 {$I containers\JclSortedMaps.imp}
 {$I containers\JclSortedMaps.int}
+{$I containers\JclAlgorithms.int}
+{$I containers\JclAlgorithms.imp}
 type
 (*$JPPLOOP ALLMAPINDEX ALLMAPCOUNT
-  {$JPPEXPANDMACRO JCLSORTEDMAPTYPESINT(,,)}
+  {$JPPEXPANDMACRO JCLSORTEDMAPTYPESINT(,,,)}
 
-  {$JPPEXPANDMACRO JCLSORTEDMAPINT(,,,,,,,,,,,,,,)}
+  {$JPPEXPANDMACRO JCLSORTEDMAPINT(,,,,,,,,,,,,,,,)}
 
 *)
-  {$IFDEF SUPPORTS_GENERICS}
+  {$IFDEF SUPPORTS_GENERICS}{$JPPDEFINE KEYGENERIC}{$JPPDEFINE VALUEGENERIC}{$JPPUNDEF KEYREFCOUNTED}{$JPPUNDEF VALUEREFCOUNTED}{$JPPUNDEF KEYZEROINIT}{$JPPUNDEF VALUEZEROINIT}
   //DOM-IGNORE-BEGIN
 
-  (*$JPPEXPANDMACRO JCLSORTEDMAPTYPESINT(TJclSortedEntry<TKey\,TValue>,TKey,TValue)*)
+  TJclSortedEntry<TKey,TValue> = record
+    Key: TKey;
+    Value: TValue;
+  end;
 
-  (*$JPPEXPANDMACRO JCLSORTEDMAPINT(TSortedEntry,TJclSortedMap<TKey\,TValue>,TJclAbstractContainerBase,IJclMap<TKey\,TValue>,IJclSortedMap<TKey\,TValue>,IJclSet<TKey>,IJclCollection<TValue>, IJclPairOwner<TKey\,TValue>\,,
+  (*$JPPEXPANDMACRO JCLSORTEDMAPINT(TSortedEntry,TSortedEntryArray,TJclSortedMap<TKey\,TValue>,TJclAbstractContainerBase,IJclMap<TKey\,TValue>,IJclSortedMap<TKey\,TValue>,IJclSet<TKey>,IJclCollection<TValue>, IJclPairOwner<TKey\,TValue>\,,
 
 protected
   type
     TSortedEntry = TJclSortedEntry<TKey\,TValue>;
+    TSortedEntryArray = array of TSortedEntry;
 private
   FOwnsKeys: Boolean;
   FOwnsValues: Boolean;
@@ -170,20 +180,24 @@ const
 implementation
 
 uses
+  {$IFDEF HAS_UNITSCOPE}
+  System.SysUtils;
+  {$ELSE ~HAS_UNITSCOPE}
   SysUtils;
+  {$ENDIF ~HAS_UNITSCOPE}
 
 (*$JPPLOOP TRUEMAPINDEX TRUEMAPCOUNT
-{$JPPEXPANDMACRO JCLSORTEDMAPIMP(,,,,,,,,,,,,,,,,)}
+{$JPPEXPANDMACRO JCLSORTEDMAPIMP(,,,,,,,,,,,,,,,,,,)}
 
 *)
 
-{$IFDEF SUPPORTS_GENERICS}
+{$IFDEF SUPPORTS_GENERICS}{$JPPDEFINE KEYGENERIC}{$JPPDEFINE VALUEGENERIC}{$JPPUNDEF KEYREFCOUNTED}{$JPPUNDEF VALUEREFCOUNTED}{$JPPUNDEF KEYZEROINIT}{$JPPUNDEF VALUEZEROINIT}
 //DOM-IGNORE-BEGIN
 
-{$JPPEXPANDMACRO JCLSORTEDMAPIMP(TJclSortedMap<TKey\,TValue>,IJclMap<TKey\,TValue>,IJclSortedMap<TKey\,TValue>,IJclSet<TKey>,IJclIterator<TKey>,IJclCollection<TValue>,; AOwnsKeys: Boolean,; AOwnsValues: Boolean,
+(*$JPPEXPANDMACRO JCLSORTEDMAPIMP(TSortedEntry,TSortedEntryArray,TJclSortedMap<TKey\,TValue>,IJclMap<TKey\,TValue>,IJclSortedMap<TKey\,TValue>,IJclSet<TKey>,IJclIterator<TKey>,IJclCollection<TValue>,; AOwnsKeys: Boolean,; AOwnsValues: Boolean,
 
   FOwnsKeys := AOwnsKeys;
-  FOwnsValues := AOwnsValues;,const ,TKey,Default(TKey),const ,TValue,Default(TValue),CreateEmptyArraySet(FSize, False),CreateEmptyArrayList(FSize, False))}
+  FOwnsValues := AOwnsValues;,const ,TKey,Default(TKey),const ,TValue,Default(TValue),CreateEmptyArraySet(FSize, False),CreateEmptyArrayList(FSize, False))*)
 
 function TJclSortedMap<TKey,TValue>.FreeKey(var Key: TKey): TKey;
 begin

@@ -79,7 +79,6 @@
 			<DCCReference Include="..\..\source\common\JclCompression.pas"/>
 			<DCCReference Include="..\..\source\common\JclCounter.pas"/>
 			<DCCReference Include="..\..\source\common\JclDateTime.pas"/>
-			<DCCReference Include="..\..\source\common\JclExprEval.pas"/>
 			<DCCReference Include="..\..\source\common\JclFileUtils.pas"/>
 			<DCCReference Include="..\..\source\common\JclIniFiles.pas"/>
 			<DCCReference Include="..\..\source\common\JclLogic.pas"/>
@@ -94,7 +93,6 @@
 			<DCCReference Include="..\..\source\common\JclSimpleXml.pas"/>
 			<DCCReference Include="..\..\source\common\JclStatistics.pas"/>
 			<DCCReference Include="..\..\source\common\JclStreams.pas"/>
-			<DCCReference Include="..\..\source\common\JclStrHashMap.pas"/>
 			<DCCReference Include="..\..\source\common\JclStringConversions.pas"/>
 			<DCCReference Include="..\..\source\common\JclStringLists.pas"/>
 			<DCCReference Include="..\..\source\common\JclStrings.pas"/>
@@ -172,27 +170,27 @@
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
 						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
 						<VersionInfo Name="MajorVer">2</VersionInfo>
-						<VersionInfo Name="MinorVer">3</VersionInfo>
+						<VersionInfo Name="MinorVer">4</VersionInfo>
 						<VersionInfo Name="Release">1</VersionInfo>
-						<VersionInfo Name="Build">4197</VersionInfo>
+						<VersionInfo Name="Build">4571</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
 						<VersionInfo Name="Private">False</VersionInfo>
 						<VersionInfo Name="DLL">False</VersionInfo>
-						<VersionInfo Name="Locale">1031</VersionInfo>
+						<VersionInfo Name="Locale">1033</VersionInfo>
 						<VersionInfo Name="CodePage">1252</VersionInfo>
 					</VersionInfo>
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Project JEDI</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">JEDI Code Library RTL package</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.1.4197</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.4.1.4571</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">Jcl</VersionInfoKeys>
-						<VersionInfoKeys Name="LegalCopyright">Copyright (C) 1999, 2011 Project JEDI</VersionInfoKeys>
+						<VersionInfoKeys Name="LegalCopyright">Copyright (C) 1999, 2012 Project JEDI</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
 						<VersionInfoKeys Name="OriginalFilename">Jcl150.bpl</VersionInfoKeys>
 						<VersionInfoKeys Name="ProductName">JEDI Code Library</VersionInfoKeys>
-						<VersionInfoKeys Name="ProductVersion">2.3 Build 4197</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductVersion">2.4 Build 4571</VersionInfoKeys>
 					</VersionInfoKeys>
 					<Source>
 						<Source Name="MainSource">Jcl.dpk</Source>

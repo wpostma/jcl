@@ -40,7 +40,7 @@
 {                                                                                                  }
 {**************************************************************************************************}
 {                                                                                                  }
-{ Last modified: $Date::                                                                        $ }
+{ Last modified: $Date::                                                                         $ }
 { Revision:      $Rev::                                                                          $ }
 { Author:        $Author::                                                                       $ }
 {                                                                                                  }
@@ -2327,11 +2327,12 @@ begin
 end;
 
 function TJclRegionInfo.GetRect(Index: Integer): TRect;
-var RectP: PRect;
+var
+  RectP: PRect;
 begin
   if (Index < 0) or (DWORD(Index) >= TRgnData(FData^).rdh.nCount) then
     raise EJclGraphicsError.CreateRes(@RsRegionDataOutOfBound);
-  RectP := PRect(PChar(@TRgnData(FData^).Buffer) + (SizeOf(TRect)*Index));
+  RectP := PRect(PAnsiChar(@TRgnData(FData^).Buffer) + (SizeOf(TRect)*Index));
   Result := RectAssign(RectP^.Left, RectP.Top, RectP^.Right, RectP^.Bottom);
 end;
 

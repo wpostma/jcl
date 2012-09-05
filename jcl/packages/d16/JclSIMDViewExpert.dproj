@@ -43,6 +43,13 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<VerInfo_MajorVer>2</VerInfo_MajorVer>
+			<VerInfo_Build>4571</VerInfo_Build>
+			<VerInfo_Release>1</VerInfo_Release>
+			<VerInfo_MinorVer>4</VerInfo_MinorVer>
+			<VerInfo_Keys>CompanyName=Project JEDI;FileDescription=JCL Debug Window of XMM registers;FileVersion=2.4.1.4571;InternalName=JclSIMDViewExpert;LegalCopyright=Copyright (C) 1999, 2012 Project JEDI;OriginalFilename=JclSIMDViewExpert160.bpl;ProductName=JEDI Code Library;ProductVersion=2.4.1.4571</VerInfo_Keys>
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 			<DCC_Namespace>System;System.Win;WinApi;Vcl;Vcl.Imaging;$(DCC_Namespace)</DCC_Namespace>
 			<DesignOnlyPackage>true</DesignOnlyPackage>
 			<DCC_DebugInformation>false</DCC_DebugInformation>
@@ -56,12 +63,12 @@
 			<GenDll>true</GenDll>
 			<GenPackage>true</GenPackage>
 			<DCC_ImageBase>$58080000</DCC_ImageBase>
-			<DCC_UsePackage>rtl;vcl;designide;Jcl;JclBaseExpert</DCC_UsePackage>
+			<DCC_UsePackage>rtl;vcl;designide;Jcl;JclBaseExpert;$(DCC_UsePackage)</DCC_UsePackage>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base_Win32)'!=''">
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
 			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-			<VerInfo_Locale>1031</VerInfo_Locale>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1)'!=''">
@@ -79,7 +86,7 @@
 			<DCC_ObjPath>..\..\lib\d16\win32\debug;..\..\source\include;$(DCC_ObjPath)</DCC_ObjPath>
 			<DCC_IncludePath>..\..\lib\d16\win32\debug;..\..\source\include;$(DCC_IncludePath)</DCC_IncludePath>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1031</VerInfo_Locale>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
 			<DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
@@ -97,10 +104,10 @@
 			<DCC_ObjPath>..\..\lib\d16\win32;..\..\source\include;$(DCC_ObjPath)</DCC_ObjPath>
 			<DCC_IncludePath>..\..\lib\d16\win32;..\..\source\include;$(DCC_IncludePath)</DCC_IncludePath>
 			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-			<VerInfo_Locale>1031</VerInfo_Locale>
+			<VerInfo_Locale>1033</VerInfo_Locale>
 		</PropertyGroup>
 		<ItemGroup>
-			<DelphiCompile Include="JclSIMDViewExpert.dpk">
+			<DelphiCompile Include="$(MainSource)">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="rtl.dcp"/>
@@ -135,27 +142,27 @@
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
 						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
 						<VersionInfo Name="MajorVer">2</VersionInfo>
-						<VersionInfo Name="MinorVer">3</VersionInfo>
+						<VersionInfo Name="MinorVer">4</VersionInfo>
 						<VersionInfo Name="Release">1</VersionInfo>
-						<VersionInfo Name="Build">4197</VersionInfo>
+						<VersionInfo Name="Build">4571</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
 						<VersionInfo Name="Private">False</VersionInfo>
 						<VersionInfo Name="DLL">False</VersionInfo>
-						<VersionInfo Name="Locale">1031</VersionInfo>
+						<VersionInfo Name="Locale">1033</VersionInfo>
 						<VersionInfo Name="CodePage">1252</VersionInfo>
 					</VersionInfo>
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Project JEDI</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">JCL Debug Window of XMM registers</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">2.3.1.4197</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">2.4.1.4571</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">JclSIMDViewExpert</VersionInfoKeys>
-						<VersionInfoKeys Name="LegalCopyright">Copyright (C) 1999, 2011 Project JEDI</VersionInfoKeys>
+						<VersionInfoKeys Name="LegalCopyright">Copyright (C) 1999, 2012 Project JEDI</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
 						<VersionInfoKeys Name="OriginalFilename">JclSIMDViewExpert160.bpl</VersionInfoKeys>
 						<VersionInfoKeys Name="ProductName">JEDI Code Library</VersionInfoKeys>
-						<VersionInfoKeys Name="ProductVersion">2.3 Build 4197</VersionInfoKeys>
+						<VersionInfoKeys Name="ProductVersion">2.4.1.4571</VersionInfoKeys>
 					</VersionInfoKeys>
 					<Source>
 						<Source Name="MainSource">JclSIMDViewExpert.dpk</Source>
